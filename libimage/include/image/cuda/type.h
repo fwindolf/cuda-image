@@ -97,6 +97,76 @@ template<> struct is_vector_type<int3  > : std::true_type {};
 template<> struct is_vector_type<int4  > : std::true_type {};
 
 /***********************************************************************************
+ * Vector type base type
+ ***********************************************************************************/
+
+template <typename T>
+struct is_float_type : std::false_type {};
+
+template<> struct is_float_type<float > : std::true_type {};
+template<> struct is_float_type<float1> : std::true_type {};
+template<> struct is_float_type<float2> : std::true_type {};
+template<> struct is_float_type<float3> : std::true_type {};
+template<> struct is_float_type<float4> : std::true_type {};
+
+template <typename T>
+struct is_uchar_type : std::false_type {};
+
+template<> struct is_uchar_type<uchar > : std::true_type {};
+template<> struct is_uchar_type<uchar1> : std::true_type {};
+template<> struct is_uchar_type<uchar2> : std::true_type {};
+template<> struct is_uchar_type<uchar3> : std::true_type {};
+template<> struct is_uchar_type<uchar4> : std::true_type {};
+
+template <typename T>
+struct is_int_type : std::false_type {};
+
+template<> struct is_int_type<int > : std::true_type {};
+template<> struct is_int_type<int1> : std::true_type {};
+template<> struct is_int_type<int2> : std::true_type {};
+template<> struct is_int_type<int3> : std::true_type {};
+template<> struct is_int_type<int4> : std::true_type {};
+
+/***********************************************************************************
+ * Vector type number of channels
+ ***********************************************************************************/
+
+template <typename T>
+struct has_4_channels : std::false_type {};
+
+template <> struct has_4_channels<float4> : std::true_type {};
+template <> struct has_4_channels<uchar4> : std::true_type {};
+template <> struct has_4_channels<int4  > : std::true_type {};
+
+template <typename T>
+struct has_3_channels : std::false_type {};
+
+template <> struct has_3_channels<float3> : std::true_type {};
+template <> struct has_3_channels<uchar3> : std::true_type {};
+template <> struct has_3_channels<int3  > : std::true_type {};
+
+template <typename T>
+struct has_2_channels : std::false_type {};
+
+template <> struct has_2_channels<float2> : std::true_type {};
+template <> struct has_2_channels<uchar2> : std::true_type {};
+template <> struct has_2_channels<int2  > : std::true_type {};
+
+template <typename T>
+struct has_1_channels : std::false_type {};
+
+template <> struct has_1_channels<float1> : std::true_type {};
+template <> struct has_1_channels<uchar1> : std::true_type {};
+template <> struct has_1_channels<int1  > : std::true_type {};
+
+template <typename T>
+struct has_0_channels : std::false_type {};
+
+template <> struct has_0_channels<float > : std::true_type {};
+template <> struct has_0_channels<uchar > : std::true_type {};
+template <> struct has_0_channels<int   > : std::true_type {};
+
+/***********************************************************************************
  * Conversion between data types
  ***********************************************************************************/
 
@@ -193,91 +263,6 @@ template <> inline size_t channels<int3  >() { return 3; }
 template <> inline size_t channels<int4  >() { return 4; }
 
 /**
- * Defines for std::enable_if
- * Usage:
- * template <typename T, typename std::enable_if<has_4_channels<T>::value, T>::type* = nullptr>
- */
-
-template <typename T>
-struct is_float_type : std::false_type {};
-
-template<> struct is_float_type<float > : std::true_type {};
-template<> struct is_float_type<float1> : std::true_type {};
-template<> struct is_float_type<float2> : std::true_type {};
-template<> struct is_float_type<float3> : std::true_type {};
-template<> struct is_float_type<float4> : std::true_type {};
-
-template <typename T>
-struct is_uchar_type : std::false_type {};
-
-template<> struct is_float_type<uchar > : std::true_type {};
-template<> struct is_float_type<uchar1> : std::true_type {};
-template<> struct is_float_type<uchar2> : std::true_type {};
-template<> struct is_float_type<uchar3> : std::true_type {};
-template<> struct is_float_type<uchar4> : std::true_type {};
-
-template <typename T>
-struct is_int_type : std::false_type {};
-
-template<> struct is_int_type<int > : std::true_type {};
-template<> struct is_int_type<int1> : std::true_type {};
-template<> struct is_int_type<int2> : std::true_type {};
-template<> struct is_int_type<int3> : std::true_type {};
-template<> struct is_int_type<int4> : std::true_type {};
-
-
-template <typename T>
-struct has_4_channels : std::false_type {};
-
-template <> struct has_4_channels<float4> : std::true_type {};
-template <> struct has_4_channels<uchar4> : std::true_type {};
-template <> struct has_4_channels<int4  > : std::true_type {};
-
-template <typename T>
-struct has_3_channels : std::false_type {};
-
-template <> struct has_3_channels<float3> : std::true_type {};
-template <> struct has_3_channels<uchar3> : std::true_type {};
-template <> struct has_3_channels<int3  > : std::true_type {};
-
-template <typename T>
-struct has_2_channels : std::false_type {};
-
-template <> struct has_2_channels<float2> : std::true_type {};
-template <> struct has_2_channels<uchar2> : std::true_type {};
-template <> struct has_2_channels<int2  > : std::true_type {};
-
-template <typename T>
-struct has_1_channels : std::false_type {};
-
-template <> struct has_1_channels<float1> : std::true_type {};
-template <> struct has_1_channels<uchar1> : std::true_type {};
-template <> struct has_1_channels<int1  > : std::true_type {};
-
-template <typename T>
-struct has_0_channels : std::false_type {};
-
-template <> struct has_0_channels<float > : std::true_type {};
-template <> struct has_0_channels<uchar > : std::true_type {};
-template <> struct has_0_channels<int   > : std::true_type {};
-
-
-template <typename T, typename TO>
-bool is_same_channels()
-{
-    size_t cT = channels<T>();
-    size_t cTO = channels<TO>();
-    return (cT == cTO);
-}
-
-template <typename T, typename TO>
-bool is_same()
-{
-    return (is_same_base<T, TO>() && is_same_channels<T, TO>());
-}
-
-
-/**
  * Ostream operator overload
  */
 template <typename T, typename std::enable_if<is_vector_type<T>::value && has_1_channels<T>::value, T>::type* = nullptr>
@@ -307,5 +292,38 @@ std::ostream& operator<<(std::ostream& os, const T& v)
     os << "(" << v.x << "," << v.y << "," << v.z << "," << v.w << ")";
     return os;
 }
+
+/**
+ * New template aliases in C++14 only
+ *
+
+template <typename T1, typename T2>
+using IsSameBase = typename 
+    std::enable_if<
+        (is_float_type<T1>::value && is_float_type<T2>::value) || 
+        (is_uchar_type<T1>::value && is_uchar_type<T2>::value) || 
+        (is_int_type<T1>::value   && is_int_type<T2>::value), T1>::type* = nullptr;
+
+template <typename T1, typename T2>
+using IsSameChannels = typename 
+    std::enable_if<
+        (has_4_channels<T>::value && has_4_channels<TO>::value) ||
+        (has_3_channels<T>::value && has_3_channels<TO>::value) ||
+        (has_2_channels<T>::value && has_2_channels<TO>::value) ||
+        (has_1_channels<T>::value && has_1_channels<TO>::value) ||
+        (has_0_channels<T>::value && has_0_channels<TO>::value), T1>::type* = nullptr;
+
+template <typename T1, typename T2>
+using IsSame = typename 
+    std::enable_if<(
+        (is_float_type<T1>::value && is_float_type<T2>::value) || 
+        (is_uchar_type<T1>::value && is_uchar_type<T2>::value) || 
+        (is_int_type<T1>::value   && is_int_type<T2>::value)) && (
+        (has_4_channels<T>::value && has_4_channels<TO>::value) ||
+        (has_3_channels<T>::value && has_3_channels<TO>::value) ||
+        (has_2_channels<T>::value && has_2_channels<TO>::value) ||
+        (has_1_channels<T>::value && has_1_channels<TO>::value) ||
+        (has_0_channels<T>::value && has_0_channels<TO>::value)), T1::type* = nullptr;
+*/
 
 } // namespace image

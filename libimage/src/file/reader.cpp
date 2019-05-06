@@ -25,14 +25,6 @@ FileReader::FileReader()
 {
 }
 
-void* FileReader::upload(const void* src, const size_t dataBytes) const
-{
-    void* dst;
-    cudaSafeCall(cudaMalloc(&dst, dataBytes));
-    cudaSafeCall(cudaMemcpy(dst, src, dataBytes, cudaMemcpyHostToDevice));
-    return dst;
-}
-
 std::vector<float> FileReader::readExr(const std::string fileName, size_t& width, size_t& height, size_t& channels) const
 {
     EXRVersion exr_version;
