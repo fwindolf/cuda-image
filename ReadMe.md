@@ -60,16 +60,17 @@ The image can be visualized in a named window using the `show(...)` method.
 On the first call, an opengl texture will be created. The data will be copied to that texture, thus subsequent changes to the image data will not reflect in the shown image.
 
 ## Functionality
-[x] Reading from file
-[x] Casting to DevPtr
-[x] Visualization (using Pangolin, with different types)
-[x] Tranformation (Setting, Replacing, Thresholding)
-[x] Reductions (Min, Max, Mean, Norm1, Norm2)
-[x] Color transformations (Gray <-> Color)
-[x] Casting (Reinterpreting, Copy to new type)
-[x] Resizing using only valid pixels (Linear, Linear with Mask)
-[x] Masking
-[x] Simple math operations with operator overloads (+, -, *, /)
-[ ] Normalization
+
+- [x] Reading from file
+- [x] Casting to DevPtr
+- [x] Visualization (using Pangolin, with different types)
+- [x] Tranformation (Setting, Replacing, Thresholding)
+- [x] Reductions (Min, Max, Mean, Norm1, Norm2)
+- [x] Color transformations (Gray <-> Color)
+- [x] Casting (Reinterpreting, Copy to new type)
+- [x] Resizing using only valid pixels (Linear, Linear gwith Mask)
+- [x] Masking
+- [x] Simple math operations with operator overloads (+, -, *, /)
+- [ ] Normalization
 
 
