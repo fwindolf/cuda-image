@@ -10,7 +10,7 @@ OPTION(BUILD_TESTS      "Build tests"       ON)
 OPTION(BUILD_SHARED     "Build shared lib"  OFF)
 OPTION(HAVE_OPENCV      "Build with opencv" OFF)
 
-MESSAGE("Building CuImage with tests=${BUILD_TESTS}, examples=${BUILD_EXAMPLES}, opencv=${HAVE_OPENCV}")
+MESSAGE("Building CuImage with tests=${BUILD_TESTS}, examples=${BUILD_EXAMPLES}, shared=${BUILD_SHARED}, with opencv=${HAVE_OPENCV}")
 
 # ------------------------------------------------------------------------
 # CMake configuration
@@ -45,7 +45,16 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/third_party/Eigen/include)
 # LodePng
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/third_party/lodepng/include)
 LINK_DIRECTORIES(${PROJECT_SOURCE_DIR}/lib)
-ADD_LIBRARY(lodepng STATIC ${PROJECT_SOURCE_DIR}/third_party/lodepng/src/lodepng.cpp)
+
+IF (BUILD_SHARED)
+    ADD_LIBRARY(lodepng SHARED 
+        ${PROJECT_SOURCE_DIR}/third_party/lodepng/src/lodepng.cpp
+    )
+ELSE()
+    ADD_LIBRARY(lodepng STATIC
+        ${PROJECT_SOURCE_DIR}/third_party/lodepng/src/lodepng.cpp
+    )
+ENDIF()
 
 # TinyExr
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/third_party/tinyexr)
@@ -63,6 +72,11 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -funroll-loops")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+
+IF(BUILD_SHARED)
+    # Add compile option -fPIC
+    SET(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ENDIF()
 
 ADD_DEFINITIONS(
     -DSOURCE_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}\"

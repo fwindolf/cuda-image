@@ -27,11 +27,19 @@ FILE(GLOB CUDA_SOURCES
     "**/**/*.cu"
 )
 
-CUDA_ADD_LIBRARY(${LIB_NAME} STATIC 
-    ${INCLUDES} 
-    ${SOURCES}    
-    ${CUDA_SOURCES}
-)
+IF(BUILD_SHARED)
+    CUDA_ADD_LIBRARY(${LIB_NAME} SHARED 
+        ${INCLUDES} 
+        ${SOURCES}    
+        ${CUDA_SOURCES}
+    )       
+ELSE()
+    CUDA_ADD_LIBRARY(${LIB_NAME} STATIC 
+        ${INCLUDES} 
+        ${SOURCES}    
+        ${CUDA_SOURCES}
+    )
+ENDIF()
 
 SET(LIB_DEPENDENCIES
     lodepng
