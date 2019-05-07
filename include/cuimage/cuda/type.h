@@ -236,9 +236,9 @@ template <> inline bool is_int<int4  >() { return true;  }
 template <typename T, typename TO>
 bool is_same_base()
 {
-    return (is_float<T>() && is_float<TO>() ||
-            is_uchar<T>() && is_uchar<TO>() ||
-            is_int<T>() && is_int<TO>());
+    return  (is_float<T>() && is_float<TO>()) ||
+            (is_uchar<T>() && is_uchar<TO>()) ||
+            (is_int<T>() && is_int<TO>());
 }
 
 template <typename T>

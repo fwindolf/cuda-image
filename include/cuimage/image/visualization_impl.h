@@ -68,5 +68,5 @@ void Image<T>::print() const
         }   
         std::cout << std::endl;
     }
-    delete h_data;
+    delete[] h_data;
 }

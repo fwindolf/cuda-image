@@ -53,7 +53,7 @@ public:
 
     virtual void show(const std::string name, void* data, const size_t dataSize, const bool wait = false) override;
 
-    virtual VisType type() const;
+    virtual VisType type() const override;
 
 private:
     int run(const std::string name, void* data, const size_t dataSize);
@@ -62,9 +62,9 @@ protected:
     template <typename T, typename TO>
     bool copyToArray(const T* data, cudaArray_t array, const size_t w, const size_t h, const float fillWith = 1.f);
 
-    virtual void render_();
+    virtual void render_() override;
 
-    virtual void bindTexture_(void* data, const size_t dataSize);
+    virtual void bindTexture_(void* data, const size_t dataSize) override;
 
     virtual bool initTexture_(const size_t dataSize);
 
