@@ -626,22 +626,25 @@ template<> inline __device__ int3 rgba2rgb(const float4 v)
     return make_int3(static_cast<int>(v.x * v.w), static_cast<int>(v.y * v.w), static_cast<int>(v.z * v.w));
 }
 
+/**
+ * RGBA to RGB - the last component will be 0..255 for uchar
+ */
 template <typename T>
 __host__ __device__ T rgba2rgb(const uchar4 v);
 
 template<> inline __device__ float3 rgba2rgb(const uchar4 v)
 {
-    return make_float3(static_cast<float>(v.x * v.w), static_cast<float>(v.y * v.w), static_cast<float>(v.z * v.w));
+    return make_float3(static_cast<float>(v.x * (v.w / 255.f)), static_cast<float>(v.y * (v.w / 255.f)), static_cast<float>(v.z * (v.w / 255.f)));
 }
 
 template<> inline __device__ uchar3 rgba2rgb(const uchar4 v)
 {
-    return make_uchar3(v.x * v.w, v.y * v.w, v.z * v.w);
+    return make_uchar3(v.x * (v.w / 255), v.y * (v.w / 255), v.z * (v.w / 255));
 }
 
 template<> inline __device__ int3 rgba2rgb(const uchar4 v)
 {
-    return make_int3(static_cast<int>(v.x * v.w), static_cast<int>(v.y * v.w), static_cast<int>(v.z * v.w));
+    return make_int3(static_cast<int>(v.x * (v.w / 255)), static_cast<int>(v.y * (v.w / 255)), static_cast<int>(v.z * (v.w / 255)));
 }
 
 template <typename T>
