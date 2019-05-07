@@ -8,7 +8,6 @@ DevPtr<TO> FileReader::read(const std::string fileName, size_t& width, size_t& h
 
     if (fileType == "PNG")
     {        
-        std::cout << "Reading PNG" << std::endl;
         std::vector<uchar> image = readPng(fileName, width, height, c);
         
         if (c == 3)
@@ -28,7 +27,6 @@ DevPtr<TO> FileReader::read(const std::string fileName, size_t& width, size_t& h
     }
     else if (fileType == "EXR")
     {
-        std::cout << "Reading EXR" << std::endl;
         std::vector<float> image = readExr(fileName, width, height, c);
         auto devptr = upload<float, float>(image.data(), width, height, c);
         return convert<float, TO>(devptr);

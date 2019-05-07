@@ -178,7 +178,6 @@ std::vector<unsigned char> FileReader::readPng(const std::string fileName, size_
     width = w;
     height = h;
     channels = image.size() / (w * h);
-    std::cout << "Loaded " << fileName << ": " << width << "x" << height << " with " << (float)image.size() /  (w * h) << " channels" << std::endl;
 
     return image;
 #endif

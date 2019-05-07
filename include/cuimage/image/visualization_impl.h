@@ -9,7 +9,6 @@ void Image<T>::setVisualizationStrategy(const VisType type)
     if (vis_ && visType_ == type)
         return;
 
-    std::cout << "Initializing/Switching visualization strategy!" << std::endl;
     // Create a new visualizer
     // TODO: This should be solvable by using constexpr... the type is set by user at compile time
     switch(type)
@@ -43,7 +42,6 @@ void Image<T>::setVisualizationStrategy(const VisType type)
 template <typename T>
 void Image<T>::show(const std::string windowName)
 {
-    std::cout << "Visualizing " << windowName << " with " << sizeBytes() << " (" << sizeof(T) << ") bytes" << std::endl;
     return vis_->show(windowName, data_, sizeBytes(), true);
 }
 

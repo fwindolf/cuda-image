@@ -173,7 +173,6 @@ public:
     TypedVisualizer(const size_t w, const size_t h)
      : VisualizerBase(w, h)
     {
-        std::cout << "Visualizing GREY" << std::endl;
     }
 
     virtual bool initTexture_(const size_t dataSize) override
@@ -194,7 +193,6 @@ public:
     TypedVisualizer(const size_t w, const size_t h)
      : VisualizerBase(w, h)
     {
-        std::cout << "Visualizing RGB" << std::endl;
     }
 
     virtual bool initTexture_(const size_t dataSize) override
@@ -222,7 +220,6 @@ public:
     TypedVisualizer(const size_t w, const size_t h)
      : VisualizerBase(w, h)
     {
-        std::cout << "Visualizing RGB" << std::endl;
     }
 private:
     virtual bool initTexture_(const size_t dataSize) override
@@ -243,7 +240,6 @@ public:
     TypedVisualizer(const size_t w, const size_t h)
      : VisualizerBase(w, h)
     {
-        std::cout << "Visualizing GREY" << std::endl;
     }
 
     virtual bool initTexture_(const size_t dataSize) override
@@ -264,7 +260,6 @@ public:
     TypedVisualizer(const size_t w, const size_t h)
      : VisualizerBase(w, h)
     {
-        std::cout << "Visualizing RGB" << std::endl;
     }
 private:
     virtual bool initTexture_(const size_t dataSize) override
@@ -291,7 +286,6 @@ public:
     TypedVisualizer(const size_t w, const size_t h)
      : VisualizerBase(w, h)
     {
-        std::cout << "Visualizing RGBA" << std::endl;
     }
 private:
     virtual bool initTexture_(const size_t dataSize) override
@@ -329,7 +323,6 @@ template<VisType T> bool TypedVisualizer<T>::initTexture_(const size_t dataSize)
 inline TypedVisualizer<DEPTH_TYPE>::TypedVisualizer(const size_t w, const size_t h)
  : VisualizerBase(w, h)
 {
-    std::cout << "Visualizing Depth" << std::endl;
 }
 
 inline void TypedVisualizer<DEPTH_TYPE>::bindTexture_(void* data, const size_t dataSize)

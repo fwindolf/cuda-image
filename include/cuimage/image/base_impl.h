@@ -49,7 +49,6 @@ Image<T>& Image<T>::operator=(const Image<T>& other)
     // Use copy of other that will be destructed at the end...
     assert(w_ == other.w_);
     assert(h_ == other.h_);
-    std::cout << "Copy assignment operator" << std::endl;
     cudaSafeCall(cudaMemcpy(data_, other.data_, w_ * h_ * sizeof(T), cudaMemcpyDeviceToDevice));
     return *this;
 }
@@ -59,7 +58,6 @@ Image<T>& Image<T>::operator=(Image<T>&& other)
 {
     assert(w_ == other.w_);
     assert(h_ == other.h_);
-    std::cout << "Move assignment operator" << std::endl;
     data_ = std::move(other.data_);
     other.data_ = nullptr;
     return *this;
