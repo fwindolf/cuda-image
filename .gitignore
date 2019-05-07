@@ -4,3 +4,6 @@
 # Build directory
 build
 
+# Installed library
+lib
+

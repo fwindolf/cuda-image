@@ -82,6 +82,15 @@ SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -ftemplate-backtrace-limit=0; --cudart;  
 
 
 # ------------------------------------------------------------------------
+# Uninstall target
+# https://gist.github.com/royvandam/3033428
+
+add_custom_target(uninstall
+    "${CMAKE_COMMAND}" -P  "${CMAKE_SOURCE_DIR}/uninstall.cmake"
+)
+
+
+# ------------------------------------------------------------------------
 # Library
 
 ADD_SUBDIRECTORY("src")
