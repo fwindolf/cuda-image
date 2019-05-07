@@ -77,6 +77,8 @@ public:
 
     size_t sizeBytes() const;
 
+    T* data() const;
+
     /**
      * Conversion to DevPtr
      */

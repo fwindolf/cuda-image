@@ -110,3 +110,9 @@ size_t Image<T>::sizeBytes() const
 {
     return size() * sizeof(T);
 }
+
+template <typename T>
+T* Image<T>::data() const
+{
+    return data_;
+}
