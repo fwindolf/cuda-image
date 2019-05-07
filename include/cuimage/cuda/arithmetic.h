@@ -139,18 +139,6 @@ __host__ __device__ T& operator-=(T& lhs, const T& rhs)
 template <typename T>
 __host__ __device__ T operator*(const T& lhs, const T& rhs);
 
-
-/**
- * @brief overload * operator to multiply broadcasted
- * Omit overloading for basic types, so our definition doesnt interfere with enums, ...
- */
-template <typename T, typename std::enable_if<!std::is_integral<T>::value, T>::type>
-__host__ __device__ T operator*(const float& lhs, const T& rhs)
-{
-    return make<T>(lhs) * rhs;
-}
-
-
 /**
  * @brief overload * operator to multiply broadcasted
  */
@@ -159,6 +147,17 @@ __host__ __device__ T operator*(const T& lhs, const float& rhs)
 {
     return make<T>(rhs) * lhs;
 }
+
+/**
+ * @brief overload * operator to multiply broadcasted
+ * Omit overloading for basic types, so our definition doesnt interfere with enums, ...
+ */
+template <typename T, typename std::enable_if<!std::is_integral<T>::value, T>::type>
+__host__ __device__ T operator*(const float& lhs, const T& rhs)
+{
+    return rhs * lhs; // use operator with switched types
+}
+
 
 /**
  * @brief overload *= operator to work with all vector types
@@ -559,6 +558,12 @@ inline __host__ __device__ uchar1 operator/(const uchar1& lhs, const uchar1& rhs
 }
 
 template <>
+inline __host__ __device__ uchar1 operator*(const uchar1& lhs, const float& rhs)
+{
+    return make_uchar1(static_cast<uchar>(lhs.x * rhs));
+}
+
+template <>
 inline __host__ __device__ uchar1 make(const float v)
 {
     return make_uchar1(static_cast<uchar>(v));
@@ -675,6 +680,12 @@ template <>
 inline __host__ __device__ uchar2 operator/(const uchar2& lhs, const uchar2& rhs)
 {
     return make_uchar2(lhs.x / rhs.x, lhs.y / rhs.y);
+}
+
+template <>
+inline __host__ __device__ uchar2 operator*(const uchar2& lhs, const float& rhs)
+{
+    return make_uchar2(static_cast<uchar>(lhs.x * rhs), static_cast<uchar>(lhs.y * rhs));
 }
 
 template <>
@@ -796,6 +807,13 @@ inline __host__ __device__ uchar3 operator/(const uchar3& lhs, const uchar3& rhs
 }
 
 template <>
+inline __host__ __device__ uchar3 operator*(const uchar3& lhs, const float& rhs)
+{
+    return make_uchar3(static_cast<uchar>(lhs.x * rhs), static_cast<uchar>(lhs.y * rhs), static_cast<uchar>(lhs.z * rhs));
+}
+
+
+template <>
 inline __host__ __device__ uchar3 make(const float v)
 {
     return make_uchar3(static_cast<uchar>(v), static_cast<uchar>(v), static_cast<uchar>(v));
@@ -912,6 +930,12 @@ template <>
 inline __host__ __device__ uchar4 operator/(const uchar4& lhs, const uchar4& rhs)
 {
     return make_uchar4(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z, lhs.w / rhs.w);
+}
+
+template <>
+inline __host__ __device__ uchar4 operator*(const uchar4& lhs, const float& rhs)
+{
+    return make_uchar4(static_cast<uchar>(lhs.x * rhs), static_cast<uchar>(lhs.y * rhs), static_cast<uchar>(lhs.z * rhs), static_cast<uchar>(lhs.w * rhs));
 }
 
 template <>
@@ -1512,6 +1536,12 @@ inline __host__ __device__ int1 operator/(const int1& lhs, const int1& rhs)
 }
 
 template <>
+inline __host__ __device__ int1 operator*(const int1& lhs, const float& rhs)
+{
+    return make_int1(static_cast<int>(lhs.x * rhs));
+}
+
+template <>
 inline __host__ __device__ int1 make(const float v)
 {
     return make_int1(static_cast<int>(v));
@@ -1628,6 +1658,12 @@ template <>
 inline __host__ __device__ int2 operator/(const int2& lhs, const int2& rhs)
 {
     return make_int2(lhs.x / rhs.x, lhs.y / rhs.y);
+}
+
+template <>
+inline __host__ __device__ int2 operator*(const int2& lhs, const float& rhs)
+{
+    return make_int2(static_cast<int>(lhs.x * rhs), static_cast<int>(lhs.y * rhs));
 }
 
 template <>
@@ -1750,6 +1786,12 @@ inline __host__ __device__ int3 operator/(const int3& lhs, const int3& rhs)
 }
 
 template <>
+inline __host__ __device__ int3 operator*(const int3& lhs, const float& rhs)
+{
+    return make_int3(static_cast<int>(lhs.x * rhs), static_cast<int>(lhs.y * rhs), static_cast<int>(lhs.z * rhs));
+}
+
+template <>
 inline __host__ __device__ int3 make(const float v)
 {
     return make_int3(static_cast<int>(v), static_cast<int>(v), static_cast<int>(v));
@@ -1867,6 +1909,13 @@ inline __host__ __device__ int4 operator/(const int4& lhs, const int4& rhs)
 {
     return make_int4(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z, lhs.w / rhs.w);
 }
+
+template <>
+inline __host__ __device__ int4 operator*(const int4& lhs, const float& rhs)
+{
+    return make_int4(static_cast<int>(lhs.x * rhs), static_cast<int>(lhs.y * rhs), static_cast<int>(lhs.z * rhs), static_cast<int>(lhs.w * rhs));
+}
+
 
 template <>
 inline __host__ __device__ int4 make(const float v)

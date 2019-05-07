@@ -48,6 +48,42 @@ inline __host__ __device__ void print(const unsigned char v, const char sep, con
 }
 
 template <>
+inline __host__ __device__ void print(const float1 v, const char sep, const char del)
+{
+    printf("(%.3f)%c", v.x, del);
+}
+
+template <>
+inline __host__ __device__ void print(const int1 v, const char sep, const char del)
+{
+    printf("(%d)%c", v.x, del);
+}
+
+template <>
+inline __host__ __device__ void print(const uchar1 v, const char sep, const char del)
+{
+    printf("(%u)%c", v.x, del);
+}
+
+template <>
+inline __host__ __device__ void print(const float2 v, const char sep, const char del)
+{
+    printf("(%.3f%c%.3f)%c", v.x, sep, v.y, del);
+}
+
+template <>
+inline __host__ __device__ void print(const int2 v, const char sep, const char del)
+{
+    printf("(%d%c%d)%c", v.x, sep, v.y, del);
+}
+
+template <>
+inline __host__ __device__ void print(const uchar2 v, const char sep, const char del)
+{
+    printf("(%u%c%u)%c", v.x, sep, v.y,  del);
+}
+
+template <>
 inline __host__ __device__ void print(const float3 v, const char sep, const char del)
 {
     printf("(%.3f%c%.3f%c%.3f)%c", v.x, sep, v.y, sep, v.z, del);

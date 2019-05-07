@@ -1,4 +1,7 @@
 #pragma once
+
+#include <vector_functions.hpp>
+
 #include "type.h"
 
 namespace cuimage
@@ -467,13 +470,13 @@ inline __host__ __device__ float rgba2gray(const float4 v)
 template<>
 inline __host__ __device__ float rgba2gray(const uchar4 v)
 {
-    return (0.21f * static_cast<float>(v.x) + 0.72f * static_cast<float>(v.y) + 0.07f * static_cast<float>(v.z)) * static_cast<float>(v.w);
+    return (0.21f * static_cast<float>(v.x) + 0.72f * static_cast<float>(v.y) + 0.07f * static_cast<float>(v.z)) * static_cast<float>(v.w / 255.f);
 }
 
 template<>
 inline __host__ __device__ float rgba2gray(const int4 v)
 {
-    return (0.21f * static_cast<float>(v.x) + 0.72f * static_cast<float>(v.y) + 0.07f * static_cast<float>(v.z)) * static_cast<float>(v.w);
+    return (0.21f * static_cast<float>(v.x) + 0.72f * static_cast<float>(v.y) + 0.07f * static_cast<float>(v.z)) * static_cast<float>(v.w / 255.f);
 }
 
 /**
@@ -537,12 +540,12 @@ template<> inline __device__ float4 gray2rgba(const float v)
 
 template<> inline __device__ uchar4 gray2rgba(const float v)
 {
-    return make_uchar4(static_cast<uchar>(v), static_cast<uchar>(v), static_cast<uchar>(v), 1.f);
+    return make_uchar4(static_cast<uchar>(v), static_cast<uchar>(v), static_cast<uchar>(v), 255);
 }
 
 template<> inline __device__ int4 gray2rgba(const float v)
 {
-    return make_int4(static_cast<int>(v), static_cast<int>(v), static_cast<int>(v), 1.f);
+    return make_int4(static_cast<int>(v), static_cast<int>(v), static_cast<int>(v), 255);
 }
 
 /**
@@ -558,12 +561,12 @@ template<> inline __device__ float4 rgb2rgba(const float3 v)
 
 template<> inline __device__ uchar4 rgb2rgba(const float3 v)
 {
-    return make_uchar4(static_cast<uchar>(v.x), static_cast<uchar>(v.y), static_cast<uchar>(v.z), 1.f);
+    return make_uchar4(static_cast<uchar>(v.x), static_cast<uchar>(v.y), static_cast<uchar>(v.z), 255);
 }
 
 template<> inline __device__ int4 rgb2rgba(const float3 v)
 {
-    return make_int4(static_cast<int>(v.x), static_cast<int>(v.y), static_cast<int>(v.z), 1.f);
+    return make_int4(static_cast<int>(v.x), static_cast<int>(v.y), static_cast<int>(v.z), 255);
 }
 
 template <typename T>
@@ -576,12 +579,12 @@ template<> inline __device__ float4 rgb2rgba(const uchar3 v)
 
 template<> inline __device__ uchar4 rgb2rgba(const uchar3 v)
 {
-    return make_uchar4(v.x, v.y, v.z, 1.f);
+    return make_uchar4(v.x, v.y, v.z, 255);
 }
 
 template<> inline __device__ int4 rgb2rgba(const uchar3 v)
 {
-    return make_int4(static_cast<int>(v.x), static_cast<int>(v.y), static_cast<int>(v.z), 1.f);
+    return make_int4(static_cast<int>(v.x), static_cast<int>(v.y), static_cast<int>(v.z), 255);
 }
 
 
@@ -595,17 +598,18 @@ template<> inline __device__ float4 rgb2rgba(const int3 v)
 
 template<> inline __device__ uchar4 rgb2rgba(const int3 v)
 {
-    return make_uchar4(static_cast<uchar>(v.x), static_cast<uchar>(v.y), static_cast<uchar>(v.z), 1.f);
+    return make_uchar4(static_cast<uchar>(v.x), static_cast<uchar>(v.y), static_cast<uchar>(v.z), 255);
 }
 
 template<> inline __device__ int4 rgb2rgba(const int3 v)
 {
-    return make_int4(v.x, v.y, v.z, 1.f);
+    return make_int4(v.x, v.y, v.z, 255);
 }
 
 
 /**
  * Convert 4channel RGBA to 3channel RGB
+ * Assume float has max 1.f in last channel
  */
 
 template <typename T>
@@ -627,7 +631,8 @@ template<> inline __device__ int3 rgba2rgb(const float4 v)
 }
 
 /**
- * RGBA to RGB - the last component will be 0..255 for uchar
+ * RGBA to RGB 
+ * the last component will be 0..255 for uchar
  */
 template <typename T>
 __host__ __device__ T rgba2rgb(const uchar4 v);
@@ -652,17 +657,17 @@ __host__ __device__ T rgba2rgb(const int4 v);
 
 template<> inline __device__ float3 rgba2rgb(const int4 v)
 {
-    return make_float3(static_cast<float>(v.x * v.w), static_cast<float>(v.y * v.w), static_cast<float>(v.z * v.w));
+    return make_float3(static_cast<float>(v.x * (v.w / 255.f)), static_cast<float>(v.y * (v.w / 255.f)), static_cast<float>(v.z * (v.w / 255.f)));
 }
 
 template<> inline __device__ uchar3 rgba2rgb(const int4 v)
 {
-    return make_uchar3(static_cast<uchar>(v.x * v.w), static_cast<uchar>(v.y * v.w), static_cast<uchar>(v.z * v.w));
+    return make_uchar3(static_cast<uchar>(v.x * (v.w / 255.f)), static_cast<uchar>(v.y * (v.w / 255.f)), static_cast<uchar>(v.z * (v.w / 255.f)));
 }
 
 template<> inline __device__ int3 rgba2rgb(const int4 v)
 {
-    return make_int3(v.x * v.w, v.y * v.w, v.z * v.w);
+    return make_int3(v.x * (v.w / 255.f), v.y * (v.w / 255.f), v.z * (v.w / 255.f));
 }
 
 

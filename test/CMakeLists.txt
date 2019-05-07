@@ -1,21 +1,21 @@
-SET(APP_TESTS tests)
+SET(APP_TESTS test)
 
 SET(APP_DEPENDENCIES
-    image
+    cuimage
+    gtest
 )
 
 # ------------------------------------------------------------------------
-# Example application
+# Tests
 
 SET(MAIN "main.cpp")
-FILE(GLOB INCLUDES "include/*.h" "include/**/*.h")
-FILE(GLOB SOURCES  "src/*.cpp" "src/**/*.cpp" "src/*.cu" "src/**/*.cu")
+FILE(GLOB INCLUDES "*.h")
+FILE(GLOB SOURCES  "test_*.cpp")
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/include)
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include)
 
-CUDA_ADD_EXECUTABLE(${APP_TESTS}
+ADD_EXECUTABLE(${APP_TESTS}
     ${MAIN}
-    ${CUDA_SOURCES}
     ${SOURCES}
     ${INCLUDE}
 )

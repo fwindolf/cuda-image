@@ -533,7 +533,6 @@ public:
 };
 
 
-
 TEST(MiscFunctionTest, float1_works)
 {
     MiscFunctionTest<float1> t;
@@ -552,4 +551,105 @@ TEST(MiscFunctionTest, float2_works)
     t.val = make_float2(v1, v2);
 
     t.test(v1, v2, v1 + v2, make_float2(-v1, v2));
+}
+
+TEST(MiscFunctionTest, float3_works)
+{
+    MiscFunctionTest<float3> t;
+
+    float v1 = -2.f, v2 = 3.f, v3 = 1.f;
+    t.val = make_float3(v1, v2, v3);
+
+    t.test(v1, v2, v1 + v2 + v3, make_float3(-v1, v2, v3));
+}
+
+TEST(MiscFunctionTest, float4_works)
+{
+    MiscFunctionTest<float4> t;
+
+    float v1 = -2.f, v2 = 3.f, v3 = 1.f, v4 = -6.2f;
+    t.val = make_float4(v1, v2, v3, v4);
+
+    t.test(v4, v2, v1 + v2 + v3 + v4, make_float4(-v1, v2, v3, -v4));
+}
+
+TEST(MiscFunctionTest, uchar1_works)
+{
+    MiscFunctionTest<uchar1> t;
+
+    uchar v = 3;
+    t.val = make_uchar1(v);
+
+    t.test(v, v, v, make_uchar1(v));
+}
+
+TEST(MiscFunctionTest, uchar2_works)
+{
+    MiscFunctionTest<uchar2> t;
+
+    uchar v1 = 2, v2 = 3; 
+    t.val = make_uchar2(v1, v2);
+
+    t.test(v1, v2, v1 + v2, make_uchar2(v1, v2));
+}
+
+TEST(MiscFunctionTest, uchar3_works)
+{
+    MiscFunctionTest<uchar3> t;
+
+    uchar v1 = 2, v2 = 5, v3 = 100;
+    t.val = make_uchar3(v1, v2, v3);
+
+    t.test(v1, v3, v1 + v2 + v3, make_uchar3(v1, v2, v3));
+}
+
+TEST(MiscFunctionTest, uchar4_works)
+{
+    MiscFunctionTest<uchar4> t;
+
+    uchar v1 = 25, v2 = 32, v3 = 10, v4 = 90;
+    t.val = make_uchar4(v1, v2, v3, v4);
+
+    t.test(v3, v4, v1 + v2 + v3 + v4, make_uchar4(v1, v2, v3, v4));
+}
+
+
+TEST(MiscFunctionTest, int1_works)
+{
+    MiscFunctionTest<int1> t;
+
+    int v = -23;
+    t.val = make_int1(v);
+
+    t.test(v, v, v, make_int1(-v));
+}
+
+TEST(MiscFunctionTest, int2_works)
+{
+    MiscFunctionTest<int2> t;
+
+    int v1 = 2, v2 = -3; 
+    t.val = make_int2(v1, v2);
+
+    t.test(v2, v1, v1 + v2, make_int2(v1, -v2));
+}
+
+TEST(MiscFunctionTest, int3_works)
+{
+    MiscFunctionTest<int3> t;
+
+    int v1 = 2, v2 = -5, v3 = 100;
+    t.val = make_int3(v1, v2, v3);
+
+    t.test(v2, v3, v1 + v2 + v3, make_int3(v1, -v2, v3));
+}
+
+TEST(MiscFunctionTest, int4_works)
+{
+    MiscFunctionTest<int4> t;
+
+    int v1 = 25, v2 = -32, v3 = 10, v4 = -90;
+    t.val = make_int4(v1, v2, v3, v4);
+
+    t.test(v4, v1, v1 + v2 + v3 + v4, make_int4(v1, -v2, v3, -v4));
 }

@@ -5,7 +5,9 @@
 
 #include <limits>
 
+#include "arithmetic.h"
 #include "type.h"
+#include "utils.h"
 
 namespace cuimage
 {
@@ -16,7 +18,7 @@ namespace cuimage
  * Takes only into account valid pixels
  */
 template <typename T>
-__device__ T interpolate_linear(const T v0, const T v1, const int p0, const int p1, const float p)
+__host__ __device__ T interpolate_linear(const T v0, const T v1, const int p0, const int p1, const float p)
 {
     assert(p1 > p0);
 
@@ -25,17 +27,28 @@ __device__ T interpolate_linear(const T v0, const T v1, const int p0, const int 
 
     // Both pixels valid -> interpolate between
     if (!isnan(v0) && !isnan(v1))
-        return v0 * (p - p0) / (p1 - p0) + v1 * (p1 - p)/(p1 - p0);
+    {
+        float d = p1 - p0;
+        float dm = (p1 - p) / d; // Influence of v0: bigger for p -> p0
+        float dp = (p - p0) / d; // Influence of v1: bigger for p -> p1
+        return v0 * dm + v1 * dp;
+    }        
     else if (!isnan(v0))
+    {
         return v0;
+    }        
     else if (!isnan(v1))
+    {
         return v1;
+    }        
     else 
+    {
         return v0; // some type of NaN   
+    }
 }
 
 template <typename T>
-__device__ T interpolate_nearest(const T v0, const T v1, const int p0, const int p1, const float p)
+__host__ __device__ T interpolate_nearest(const T v0, const T v1, const int p0, const int p1, const float p)
 {
     assert(p1 > p0);
 
@@ -47,8 +60,10 @@ __device__ T interpolate_nearest(const T v0, const T v1, const int p0, const int
         return v1; // might be NaN
     else if (isnan(v1))
         return v0; // might be NaN
+    else if (p1 - p > p - p0)
+        return v0; // Influence of v0 bigger
     else
-        return (p1 - p > p - p0 ? v1 : v0);
+        return v1;
 }
 
 }  // image

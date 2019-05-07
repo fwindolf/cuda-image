@@ -4,10 +4,13 @@ PROJECT("cuimage")
 # ------------------------------------------------------------------------
 # Options
 
-OPTION(BUILD_TESTS      "Build tests"       0)
-OPTION(BUILD_EXAMPLES   "Build examples"    1)
-OPTION(BUILD_SHARED     "Build shared lib"  0)
-OPTION(HAVE_OPENCV      "Build with opencv" 0)
+
+OPTION(BUILD_EXAMPLES   "Build examples"    ON)
+OPTION(BUILD_TESTS      "Build tests"       ON)
+OPTION(BUILD_SHARED     "Build shared lib"  OFF)
+OPTION(HAVE_OPENCV      "Build with opencv" OFF)
+
+MESSAGE("Building CuImage with tests=${BUILD_TESTS}, examples=${BUILD_EXAMPLES}, opencv=${HAVE_OPENCV}")
 
 # ------------------------------------------------------------------------
 # CMake configuration
