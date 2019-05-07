@@ -84,7 +84,7 @@ Image<T>::~Image()
 template <typename T>
 bool Image<T>::empty() const
 {
-    return (bool)data_;
+    return (data_ == nullptr);
 }
 
 template <typename T>
