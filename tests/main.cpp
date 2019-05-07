@@ -318,11 +318,48 @@ void test_show_all_formats_in_texture()
     pangolin::GetBoundWindow()->RemoveCurrent();
 }
 
+
+#include "cuimage/cuda/type.h"
+
+struct FileReader
+{
+    template <typename T> 
+    T* read() const;
+}
+
+struct PngReader : public FileReader
+{
+    template <typename T, typename std::enable_if<(has_4_channels<T>::value || has_3_channels<T>::value || has_1_channels<T>::value) && is_uchar_type<T>::value, T>::type* = nullptr>
+    T* read() const;
+}
+
+struct ExrReader : public FileReader
+{
+    template <typename T, typename std::enable_if<is_float_type<T>::value, T>::type* = nullptr>
+    T* read() const;
+}
+
 int main(int argc, char** argv)
 {
     // test_show_all_formats_in_texture();
 
-    test_show_uchar3_from_array_bound_texture();
+    //test_show_uchar3_from_array_bound_texture();
 
     //test_show_float3_from_array_bound_texture();
+
+    std::string fileName = "asdf.png";
+    std::string fileType = fileName.substr(fileName.find_last_of(".") + 1);
+    std::transform(fileType.begin(), fileType.end(), fileType.begin(), ::toupper);
+
+    if (fileName == "PNG")
+    {
+        PngReader f;
+        uchar4* data = f.read();
+    }
+    else if (fileName == "EXR")
+    {
+        ExrReader f;
+        float* data = f.read();
+    }
+
 }
