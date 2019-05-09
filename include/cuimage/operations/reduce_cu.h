@@ -29,12 +29,6 @@ template <typename T>
 float cu_Sum(DevPtr<T> image);
 
 /**
- * Get the approximate median of all values in image
- */
-template <typename T>
-T cu_Median(DevPtr<T> image);
-
-/**
  * Get the L1 norm of all values in image
  */
 template <typename T>

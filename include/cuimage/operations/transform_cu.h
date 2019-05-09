@@ -34,4 +34,11 @@ void cu_Replace(DevPtr<T> image, const T& value, const T& with);
 template <typename T>
 void cu_ReplaceNan(DevPtr<T> image, const T& value);
 
+/**
+ * Get the approximate median of all values in image
+ */
+template <typename T>
+T cu_Median(DevPtr<T> image);
+
+
 } // image
