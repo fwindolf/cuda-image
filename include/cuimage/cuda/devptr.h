@@ -23,8 +23,14 @@ template <typename T>
 class DevPtr
 {
 public:
+    /**
+     * Create a new DevPtr from exising data
+     */
     DevPtr(T* data, const size_t width, const size_t height);
 
+    /**
+     * Create a new DevPtr that allocates memory
+     */
     DevPtr(const size_t width, const size_t height);
 
     /**
@@ -33,6 +39,12 @@ public:
     DevPtr(const DevPtr<T>& other);
 
     ~DevPtr();
+
+    /**
+     * Free the data manually
+     * Only call this method if the DevPtr was created from size (and allocates memory)
+     */
+    void free();
 
     /**
      * Access the data as lvalue via continuous index
@@ -87,6 +99,7 @@ DevPtr<T>::DevPtr(const size_t width, const size_t height)
   data(nullptr),
   pitch_(0)
 {
+    std::cout << "DevPtr allocating memory, do not forget to free()" << std::endl;
     cudaSafeCall(cudaMalloc(&data, width * height * sizeof(T)));
     cudaSafeCall(cudaMemset(data, 0, width * height * sizeof(T)));
 }
@@ -105,6 +118,14 @@ template <typename T>
 DevPtr<T>::~DevPtr()
 {
 }
+
+template <typename T>
+void DevPtr<T>::free()
+{
+    cudaSafeCall(cudaFree(data));
+    data = nullptr;
+}
+
 
 template <typename T>
 __device__ T& DevPtr<T>::operator()(const size_t idx)
@@ -137,13 +158,16 @@ __device__ const T DevPtr<T>::operator()(const size_t x, const size_t y) const
 template <typename T>
 DevPtr<T>& DevPtr<T>::operator=(const DevPtr<T>& other)
 {
-    if (this != &other)
-    {
-        if (other.width == width && other.height == height)
-            cudaSafeCall(cudaMemcpy(data, other.data, width * height * sizeof(T), cudaMemcpyDeviceToDevice));
-        else
-            throw std::runtime_error("Assigning data from different size not implemented yet!");
-    }
+    if (data == nullptr)
+        cudaSafeCall(cudaMalloc(&data,  width * height * sizeof(T)));        
+    
+    if (this == &other)
+        throw std::runtime_error("Self-assignment not possible!");
+
+    if (other.width != width && other.height != height)
+        throw std::runtime_error("Assignment with different (data) sizes not possible!");
+
+    cudaSafeCall(cudaMemcpy(data, other.data, width * height * sizeof(T), cudaMemcpyDeviceToDevice));
     return *this;
 }
 
