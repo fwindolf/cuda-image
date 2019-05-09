@@ -114,19 +114,20 @@ template <typename T, typename TO, typename
 DevPtr<TO> convertDevPtr(const DevPtr<T>& input_same_type)
 {
     DevPtr<TO> output(input_same_type.width, input_same_type.height); // Allocates
+    
     if (channels<TO>() >= 3 && channels<T>() == 1)
     {
-        cu_GrayToColor(output, input_same_type);
+        cu_GrayToColor<T, TO>(output, input_same_type);
         return output;
     }
     else if (channels<TO>() == 1 && channels<T>() >= 3)
     {           
-        cu_ColorToGray(output, input_same_type);
+        cu_ColorToGray<T, TO>(output, input_same_type);
         return output;
     }
     else if (channels<T>() >= 3 && channels<T>() >= 3)
     {
-        cu_ColorToColor(output, input_same_type);
+        cu_ColorToColor<T, TO>(output, input_same_type);
         return output;
     }
     
