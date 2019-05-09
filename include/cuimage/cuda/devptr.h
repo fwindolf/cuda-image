@@ -36,9 +36,9 @@ public:
     /**
      * Copy by creating new header for data
      */
-    DevPtr(const DevPtr<T>& other);
+     __host__ __device__ DevPtr(const DevPtr<T>& other);
 
-    ~DevPtr();
+     __host__ __device__ ~DevPtr();
 
     /**
      * Free the data manually
@@ -106,7 +106,7 @@ DevPtr<T>::DevPtr(const size_t width, const size_t height)
 
 
 template <typename T>
-DevPtr<T>::DevPtr(const DevPtr<T>& other)
+ __host__ __device__ DevPtr<T>::DevPtr(const DevPtr<T>& other)
  : width(other.width),
    height(other.height),
    data(other.data),
@@ -115,7 +115,7 @@ DevPtr<T>::DevPtr(const DevPtr<T>& other)
 }
 
 template <typename T>
-DevPtr<T>::~DevPtr()
+ __host__ __device__ DevPtr<T>::~DevPtr()
 {
 }
 
