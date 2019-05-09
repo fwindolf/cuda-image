@@ -156,6 +156,13 @@ void cu_Convert(DevPtr<TO> output, const DevPtr<T> input)
     template void function(DevPtr<typeO>, const DevPtr<type>);
 
 // All to all conversions with same channel
+FOR_EACH_0CHANNEL_TYPE(INST_CONVERSION_FUNCTION, float , cu_Convert)
+FOR_EACH_0CHANNEL_TYPE(INST_CONVERSION_FUNCTION, float1, cu_Convert)
+FOR_EACH_0CHANNEL_TYPE(INST_CONVERSION_FUNCTION, uchar , cu_Convert)
+FOR_EACH_0CHANNEL_TYPE(INST_CONVERSION_FUNCTION, uchar1, cu_Convert)
+FOR_EACH_0CHANNEL_TYPE(INST_CONVERSION_FUNCTION, int   , cu_Convert)
+FOR_EACH_0CHANNEL_TYPE(INST_CONVERSION_FUNCTION, int1  , cu_Convert)
+
 FOR_EACH_1CHANNEL_TYPE(INST_CONVERSION_FUNCTION, float , cu_Convert)
 FOR_EACH_1CHANNEL_TYPE(INST_CONVERSION_FUNCTION, float1, cu_Convert)
 FOR_EACH_1CHANNEL_TYPE(INST_CONVERSION_FUNCTION, uchar , cu_Convert)

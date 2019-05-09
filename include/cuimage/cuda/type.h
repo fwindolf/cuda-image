@@ -45,12 +45,14 @@
     func(int3, __VA_ARGS__)                 \
     func(int4, __VA_ARGS__)                 \
 
-#define FOR_EACH_1CHANNEL_TYPE(func, ...)   \
+#define FOR_EACH_0CHANNEL_TYPE(func, ...)   \
     func(float, __VA_ARGS__)                \
-    func(float1, __VA_ARGS__)               \
     func(uchar, __VA_ARGS__)                \
-    func(uchar1, __VA_ARGS__)               \
     func(int, __VA_ARGS__)                  \
+
+#define FOR_EACH_1CHANNEL_TYPE(func, ...)   \
+    func(float1, __VA_ARGS__)               \
+    func(uchar1, __VA_ARGS__)               \
     func(int1, __VA_ARGS__)                 \
     
 #define FOR_EACH_2CHANNEL_TYPE(func, ...)   \
