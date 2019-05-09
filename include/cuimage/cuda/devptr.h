@@ -87,7 +87,8 @@ DevPtr<T>::DevPtr(const size_t width, const size_t height)
   data(nullptr),
   pitch_(0)
 {
-    cudaMalloc(&data, width * height * sizeof(T));
+    cudaSafeCall(cudaMalloc(&data, width * height * sizeof(T)));
+    cudaSafeCall(cudaMemset(data, 0, width * height * sizeof(T)));
 }
 
 

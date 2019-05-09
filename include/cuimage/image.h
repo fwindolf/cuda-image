@@ -59,13 +59,27 @@ public:
 
     Image(size_t w, size_t h, const T initVal = make<T>(0.f));
 
+    ~Image();
+
+    /**
+     * Assignment
+     */
+
     Image& operator=(const Image&);
 
     Image& operator=(Image&&);
 
-    void swap(Image& i1, Image& i2);
+    void swap(Image& other);
 
-    ~Image();
+    void realloc(size_t w, size_t h);
+    
+    void copyTo(Image& other);
+
+    void copyFrom(const Image& other);
+
+    /**
+     * Accessors
+     */    
 
     bool empty() const;
 

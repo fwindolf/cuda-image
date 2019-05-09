@@ -7,10 +7,9 @@ Image<T>::Image()
 
 template <typename T>
 Image<T>::Image(const Image& other)
-    : Image(nullptr, other.w_, other.h_)
+    : Image(nullptr, 0, 0)
 {   
-    cudaSafeCall(cudaMalloc(&data_, sizeBytes()));
-    cudaSafeCall(cudaMemcpy(data_, other.data_, sizeBytes(), cudaMemcpyDeviceToDevice));
+    copyFrom(other);
 }
 
 template <typename T>
@@ -24,6 +23,7 @@ template <typename T>
 Image<T>::Image(T* data, size_t w, size_t h)
     : data_(data), w_(w), h_(h)
 {
+    // Allocate new memory if data was nullptr
     if (!data_)
         cudaSafeCall(cudaMalloc(&data_, sizeBytes()));
 }
@@ -44,9 +44,20 @@ Image<T>::Image(const std::string& fileName)
 }
 
 template <typename T>
+Image<T>::~Image()
+{
+    if (data_)
+        cudaSafeCall(cudaFree(data_));
+
+    data_ = nullptr;
+}
+
+template <typename T>
 Image<T>& Image<T>::operator=(const Image<T>& other)
 {
-    // Use copy of other that will be destructed at the end...
+    if (empty())
+        *this = Image(other.w_, other.h_);
+
     assert(w_ == other.w_);
     assert(h_ == other.h_);
     cudaSafeCall(cudaMemcpy(data_, other.data_, w_ * h_ * sizeof(T), cudaMemcpyDeviceToDevice));
@@ -64,22 +75,41 @@ Image<T>& Image<T>::operator=(Image<T>&& other)
 }
 
 template <typename T>
-void Image<T>::swap(Image<T>& i1, Image<T>& i2)
+void Image<T>::swap(Image<T>& other)
 {
     // Instead of expensive copy of 1, just swap the internals
-    std::swap(i1.data_, i2.data_);
-    std::swap(i1.w_, i2.w_);
-    std::swap(i1.h_, i2.h_);
+    std::swap(data_, other.data_);
+    std::swap(w_, other.w_);
+    std::swap(h_, other.h_);
 }
 
 template <typename T>
-Image<T>::~Image()
+void Image<T>::realloc(size_t w, size_t h)
 {
+    w_ = w;
+    h_ = h;
     if (data_)
         cudaSafeCall(cudaFree(data_));
 
-    data_ = nullptr;
+    cudaSafeCall(cudaMalloc(&data_, sizeBytes()));
 }
+
+template <typename T>
+void Image<T>::copyTo(Image& other)
+{
+    other.copyFrom(*this);
+}
+
+template <typename T>
+void Image<T>::copyFrom(const Image& other)
+{
+    // If dimensions change, reallocate (usually quite as fast as extending memory)
+    if (empty() || other.width() != w_ || other.height() != h_)
+        realloc(other.width(), other.height());
+    
+    cudaSafeCall(cudaMemcpy(other.data(), data_, sizeBytes(), cudaMemcpyDeviceToDevice));
+}
+
 
 template <typename T>
 bool Image<T>::empty() const
