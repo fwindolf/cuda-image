@@ -73,7 +73,7 @@ public:
 
     void realloc(size_t w, size_t h);
     
-    void copyTo(Image& other);
+    void copyTo(Image& other) const;
 
     void copyFrom(const Image& other);
 

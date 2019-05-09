@@ -67,6 +67,9 @@ Image<T>& Image<T>::operator=(const Image<T>& other)
 template <typename T>
 Image<T>& Image<T>::operator=(Image<T>&& other)
 {
+    if (data_ == nullptr && w_ == 0 && h_ == 0)
+        realloc(other.w_, other.h_);
+
     assert(w_ == other.w_);
     assert(h_ == other.h_);
     data_ = std::move(other.data_);
@@ -95,7 +98,7 @@ void Image<T>::realloc(size_t w, size_t h)
 }
 
 template <typename T>
-void Image<T>::copyTo(Image& other)
+void Image<T>::copyTo(Image& other) const
 {
     other.copyFrom(*this);
 }
@@ -107,7 +110,7 @@ void Image<T>::copyFrom(const Image& other)
     if (empty() || other.width() != w_ || other.height() != h_)
         realloc(other.width(), other.height());
     
-    cudaSafeCall(cudaMemcpy(other.data(), data_, sizeBytes(), cudaMemcpyDeviceToDevice));
+    cudaSafeCall(cudaMemcpy(data_, other.data(), sizeBytes(), cudaMemcpyDeviceToDevice));
 }
 
 

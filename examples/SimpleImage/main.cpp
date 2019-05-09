@@ -39,5 +39,11 @@ int main(int argc, char** argv)
     std::cout << "norm1 = " << grey.norm1() << std::endl;
     std::cout << "norm2 = " << grey.norm2() << std::endl;
     
-    
+    Image<float> copy;
+    grey.copyTo(copy);
+
+    std::cout << "min = " << copy.min() << std::endl;
+    std::cout << "max = " << copy.max() << std::endl;
+
+    copy.show("Grey Copy", COLOR_TYPE_GREY_F);       
 }
