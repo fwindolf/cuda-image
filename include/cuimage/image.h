@@ -136,6 +136,16 @@ public:
 
     float sum() const;
 
+    float mean() const;
+
+    // Only possible for 0-channel types
+    template<class Q = T, typename std::enable_if<has_0_channels<Q>::value, Q>::type* = nullptr>
+    Q median() const;
+
+    unsigned int valid() const;
+    
+    unsigned int nonzero() const;
+
     float norm1() const;
 
     float norm2() const;

@@ -319,9 +319,19 @@ inline __host__ __device__ float sum(const float v)
     return v;
 }
 
+inline __host__ __device__ float min(const float& v)
+{
+    return v;
+}
+
 inline __host__ __device__ float min(const float& l, const float& r)
 {
     return (l < r ? l : r);
+}
+
+inline __host__ __device__ float max(const float& v)
+{
+    return v;
 }
 
 inline __host__ __device__ float max(const float& l, const float& r)

@@ -80,7 +80,7 @@ void Image<T>::resize(const size_t width, const size_t height)
 {
     Image<T> tmp(nullptr, width, height);
     cu_ResizeLinear<T>(tmp, *this);
-    swap(*this, tmp);
+    swap(tmp);
 }
 
 template<typename T>
@@ -88,7 +88,7 @@ void Image<T>::resize(const size_t width, const size_t height, const Image<uchar
 {
     Image<T> tmp(nullptr, width, height);
     cu_ResizeLinear<T>(tmp, *this, mask);
-    swap(*this, tmp);
+    swap(tmp);
 }
 
 template<typename T>
@@ -112,7 +112,7 @@ void Image<T>::resize(const float factor)
 {
     Image<T> tmp(nullptr, factor * w_, factor * h_);
     cu_ResizeLinear<T>(tmp, *this);
-    swap(*this, tmp);
+    swap(tmp);
 }
 
 template<typename T>
@@ -120,7 +120,7 @@ void Image<T>::resize(const float factor, const Image<uchar>& mask)
 {
     Image<T> tmp(nullptr, factor * w_, factor * h_);
     cu_ResizeLinear<T>(tmp, *this, mask);
-    swap(*this, tmp);
+    swap(tmp);
 }
 
 template<typename T>

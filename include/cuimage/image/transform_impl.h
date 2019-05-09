@@ -41,6 +41,39 @@ float Image<T>::sum() const
 }
 
 template <typename T>
+float Image<T>::mean() const
+{
+    // First sum all pixel components and then add.
+    Image<float> sum(w_, h_, 0.f);
+    cu_PixelSum<T, float>(sum, *this);
+    return cu_Sum<float>(sum) / (channels<T>() * size()); // Sum of all components divided by number of components
+}
+
+template <typename T>
+template <class Q, typename std::enable_if<has_0_channels<Q>::value, Q>::type*>
+Q Image<T>::median() const
+{
+    return cu_Median<Q>(*this);
+}
+
+template <typename T>
+unsigned int Image<T>::valid() const
+{
+    // First mark valid pixels, then count. Makes sure data type storage is sufficient
+    Image<int> cnt(w_, h_, 0);
+    cu_MarkValid<T, int>(cnt, *this);
+    return static_cast<unsigned int>(cu_Sum<int>(cnt));
+}
+
+template <typename T>
+unsigned int Image<T>::nonzero() const
+{
+    Image<int> cnt(w_, h_, 0);
+    cu_MarkNonzero<T, int>(cnt, *this);
+    return static_cast<unsigned int>(cu_Sum<int>(cnt));
+}
+
+template <typename T>
 float Image<T>::norm1() const
 {
     return cu_Norm1<T>(*this);
@@ -50,6 +83,7 @@ template <typename T>
 float Image<T>::norm2() const
 {
     // This cannot be done as usual reducing operation, so first square, then add
-    DevPtr<T> tmp = (*this) * (*this);
-    return sqrt(cu_Sum(tmp));
+    Image<float> norms(w_, h_, 0.f);
+    cu_SquareNorm<T, float>(norms, *this);
+    return sqrt(cu_Sum<float>(norms));
 }
