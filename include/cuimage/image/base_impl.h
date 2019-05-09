@@ -162,3 +162,14 @@ T* Image<T>::download(const int first_n) const
     cudaSafeCall(cudaMemcpy(out, data_, first_n * sizeof(T), cudaMemcpyDeviceToHost));
     return out;
 }
+
+template <typename T>
+void Image<T>::upload(const T* hdata, const size_t width, const size_t height)
+{
+    if (data_ == nullptr && w_ == 0 && h_ == 0)
+        realloc(width, height);
+        
+    assert(w_ == width);
+    assert(h_ == height);
+    cudaSafeCall(cudaMemcpy(data_, hdata, sizeBytes(), cudaMemcpyHostToDevice));
+}

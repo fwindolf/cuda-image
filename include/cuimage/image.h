@@ -97,6 +97,8 @@ public:
 
     T* download(int first_n) const;
 
+    void upload(const T* hdata, const size_t width, const size_t height);
+
     /**
      * Conversion to DevPtr
      */
