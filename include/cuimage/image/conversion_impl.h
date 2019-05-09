@@ -18,6 +18,7 @@ Image<TO> Image<T>::asGray() const
     assert(channels<T>() >= 3);
     assert(channels<TO>() == 1);
 
+    // Allocates, but doesnt set initial value
     Image<TO> output(nullptr, w_, h_);
     cu_ColorToGray<T, TO>(output, *this);
 
@@ -31,6 +32,7 @@ Image<TO> Image<T>::asColor() const
     assert(channels<T>() == 1);
     assert(channels<TO>() >= 3);
 
+    // Allocates, but doesnt set initial value
     Image<TO> output(nullptr, w_, h_);
     cu_GrayToColor<T>(output, *this);
 
@@ -54,6 +56,7 @@ Image<TO> Image<T>::as() const
 {
     assert(channels<T>() == channels<TO>());
 
+    // Allocates, but doesnt set initial value
     Image<TO> output(nullptr, w_, h_);
     cu_Convert<T, TO>(output, *this);
     return output;
@@ -62,6 +65,7 @@ Image<TO> Image<T>::as() const
 template<typename T>
 Image<T> Image<T>::resize(const size_t width, const size_t height) const
 {
+    // Allocates, but doesnt set initial value
     Image<T> output(nullptr, width, height);
     cu_ResizeLinear<T>(output, *this);
     return output;
@@ -70,6 +74,7 @@ Image<T> Image<T>::resize(const size_t width, const size_t height) const
 template<typename T>
 Image<T> Image<T>::resize(const size_t width, const size_t height, const Image<uchar>& mask) const
 {
+    // Allocates, but doesnt set initial value
     Image<T> output(nullptr, width, height);
     cu_ResizeLinear<T>(output, *this, mask);
     return output;
@@ -78,6 +83,7 @@ Image<T> Image<T>::resize(const size_t width, const size_t height, const Image<u
 template<typename T>
 void Image<T>::resize(const size_t width, const size_t height)
 {
+    // Allocates, but doesnt set initial value
     Image<T> tmp(nullptr, width, height);
     cu_ResizeLinear<T>(tmp, *this);
     swap(tmp);
@@ -86,6 +92,7 @@ void Image<T>::resize(const size_t width, const size_t height)
 template<typename T>
 void Image<T>::resize(const size_t width, const size_t height, const Image<uchar>& mask)
 {
+    // Allocates, but doesnt set initial value
     Image<T> tmp(nullptr, width, height);
     cu_ResizeLinear<T>(tmp, *this, mask);
     swap(tmp);
@@ -94,6 +101,7 @@ void Image<T>::resize(const size_t width, const size_t height, const Image<uchar
 template<typename T>
 Image<T> Image<T>::resize(const float factor) const
 {
+    // Allocates, but doesnt set initial value
     Image<T> output(nullptr, factor * w_, factor * h_);
     cu_ResizeLinear<T>(output, *this);
     return output;
@@ -102,6 +110,7 @@ Image<T> Image<T>::resize(const float factor) const
 template<typename T>
 Image<T> Image<T>::resize(const float factor, const Image<uchar>& mask) const
 {
+    // Allocates, but doesnt set initial value
     Image<T> output(nullptr, factor * w_, factor * h_);
     cu_ResizeLinear<T>(output, *this, mask);
     return output;
@@ -110,6 +119,7 @@ Image<T> Image<T>::resize(const float factor, const Image<uchar>& mask) const
 template<typename T>
 void Image<T>::resize(const float factor)
 {
+    // Allocates, but doesnt set initial value
     Image<T> tmp(nullptr, factor * w_, factor * h_);
     cu_ResizeLinear<T>(tmp, *this);
     swap(tmp);
@@ -118,6 +128,7 @@ void Image<T>::resize(const float factor)
 template<typename T>
 void Image<T>::resize(const float factor, const Image<uchar>& mask)
 {
+    // Allocates, but doesnt set initial value
     Image<T> tmp(nullptr, factor * w_, factor * h_);
     cu_ResizeLinear<T>(tmp, *this, mask);
     swap(tmp);

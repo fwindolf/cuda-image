@@ -73,7 +73,7 @@ __host__ __device__ T operator+(const T& lhs, const T& rhs);
  * @brief overload + operator to add broadcasted
  * Omit overloading for basic types, so our definition doesnt interfere with enums, ...
  */
-template <typename T, typename std::enable_if<!std::is_integral<T>::value, T>::type>
+template <typename T, typename std::enable_if<is_vector_type<T>::value, T>::type* = nullptr>
 __host__ __device__ T operator+(const float& lhs, const T& rhs)
 {
     return make<T>(lhs) + rhs;
@@ -83,7 +83,7 @@ __host__ __device__ T operator+(const float& lhs, const T& rhs)
 /**
  * @brief overload + operator to add broadcasted
  */
-template <typename T>
+template <typename T, typename std::enable_if<is_vector_type<T>::value, T>::type* = nullptr>
 __host__ __device__ T operator+(const T& lhs, const float& rhs)
 {
     return make<T>(rhs) + lhs;
@@ -108,7 +108,7 @@ __host__ __device__ T operator-(const T& lhs, const T& rhs);
 /**
  * @brief overload - operator to subtract broadcasted
  */
-template <typename T>
+template <typename T, typename std::enable_if<is_vector_type<T>::value, T>::type* = nullptr>
 __host__ __device__ T operator-(const float& lhs, const T& rhs)
 {
     return make<T>(lhs) - rhs;
@@ -117,7 +117,7 @@ __host__ __device__ T operator-(const float& lhs, const T& rhs)
 /**
  * @brief overload - operator to subtract broadcasted
  */
-template <typename T>
+template <typename T, typename std::enable_if<is_vector_type<T>::value, T>::type* = nullptr>
 __host__ __device__ T operator-(const T& lhs, const float& rhs)
 {
     return lhs - make<T>(rhs);
@@ -152,7 +152,7 @@ __host__ __device__ T operator*(const T& lhs, const float& rhs)
  * @brief overload * operator to multiply broadcasted
  * Omit overloading for basic types, so our definition doesnt interfere with enums, ...
  */
-template <typename T, typename std::enable_if<!std::is_integral<T>::value, T>::type>
+template <typename T, typename std::enable_if<is_vector_type<T>::value, T>::type* = nullptr>
 __host__ __device__ T operator*(const float& lhs, const T& rhs)
 {
     return rhs * lhs; // use operator with switched types
@@ -178,7 +178,7 @@ __host__ __device__ T operator/(const T& lhs, const T& rhs);
 /**
  * @brief overload / operator to divide broadcasted
  */
-template <typename T>
+template <typename T, typename std::enable_if<is_vector_type<T>::value, T>::type* = nullptr>
 __host__ __device__ T operator/(const float& lhs, const T& rhs)
 {
     return make<T>(lhs) / rhs;
@@ -187,7 +187,7 @@ __host__ __device__ T operator/(const float& lhs, const T& rhs)
 /**
  * @brief overload / operator to divide broadcasted
  */
-template <typename T>
+template <typename T, typename std::enable_if<is_vector_type<T>::value, T>::type* = nullptr>
 __host__ __device__ T operator/(const T& lhs, const float& rhs)
 {
     return lhs / make<T>(rhs);
