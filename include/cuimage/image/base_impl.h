@@ -146,3 +146,19 @@ T* Image<T>::data() const
 {
     return data_;
 }
+
+template <typename T>
+T Image<T>::at(const size_t x, const size_t y) const
+{
+    T out;
+    cudaSafeCall(cudaMemcpy(&out, &data_[x + y * w_], sizeof(T), cudaMemcpyDeviceToHost));
+    return out;
+}
+
+template <typename T>
+T* Image<T>::download(const int first_n) const
+{
+    T* out = new T[first_n];
+    cudaSafeCall(cudaMemcpy(out, data_, first_n * sizeof(T), cudaMemcpyDeviceToHost));
+    return out;
+}

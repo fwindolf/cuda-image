@@ -93,6 +93,10 @@ public:
 
     T* data() const;
 
+    T at(size_t x, size_t y) const;
+
+    T* download(int first_n) const;
+
     /**
      * Conversion to DevPtr
      */
