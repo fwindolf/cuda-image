@@ -19,7 +19,7 @@ Image<TO> Image<T>::asGray() const
     assert(channels<TO>() == 1);
 
     Image<TO> output(nullptr, w_, h_);
-    cu_ColorToGray<T>(output, *this);
+    cu_ColorToGray<T, TO>(output, *this);
 
     return output;
 }
@@ -55,7 +55,7 @@ Image<TO> Image<T>::as() const
     assert(channels<T>() == channels<TO>());
 
     Image<TO> output(nullptr, w_, h_);
-    cu_Convert<T>(output, *this);
+    cu_Convert<T, TO>(output, *this);
     return output;
 }
 
