@@ -74,6 +74,10 @@ Image<T> Image<T>::resize(const size_t width, const size_t height) const
 template<typename T>
 Image<T> Image<T>::resize(const size_t width, const size_t height, const Image<uchar>& mask) const
 {
+    // Mask on input resolution
+    assert(mask.width() == w_);
+    assert(mask.height() == h_);
+
     // Allocates, but doesnt set initial value
     Image<T> output(nullptr, width, height);
     cu_ResizeLinear<T>(output, *this, mask);
@@ -83,6 +87,9 @@ Image<T> Image<T>::resize(const size_t width, const size_t height, const Image<u
 template<typename T>
 void Image<T>::resize(const size_t width, const size_t height)
 {
+    if (w_ == width && h_ == height)
+        return;
+
     // Allocates, but doesnt set initial value
     Image<T> tmp(nullptr, width, height);
     cu_ResizeLinear<T>(tmp, *this);
@@ -92,6 +99,13 @@ void Image<T>::resize(const size_t width, const size_t height)
 template<typename T>
 void Image<T>::resize(const size_t width, const size_t height, const Image<uchar>& mask)
 {
+    if (w_ == width && h_ == height)
+        return;
+    
+    // Mask on input resolution
+    assert(mask.width() == w_);
+    assert(mask.height() == h_);
+
     // Allocates, but doesnt set initial value
     Image<T> tmp(nullptr, width, height);
     cu_ResizeLinear<T>(tmp, *this, mask);
@@ -110,6 +124,10 @@ Image<T> Image<T>::resize(const float factor) const
 template<typename T>
 Image<T> Image<T>::resize(const float factor, const Image<uchar>& mask) const
 {
+    // Mask on input resolution
+    assert(mask.width() == w_);
+    assert(mask.height() == h_);
+
     // Allocates, but doesnt set initial value
     Image<T> output(nullptr, factor * w_, factor * h_);
     cu_ResizeLinear<T>(output, *this, mask);
@@ -119,6 +137,9 @@ Image<T> Image<T>::resize(const float factor, const Image<uchar>& mask) const
 template<typename T>
 void Image<T>::resize(const float factor)
 {
+    if (factor == 1.f)
+        return;
+
     // Allocates, but doesnt set initial value
     Image<T> tmp(nullptr, factor * w_, factor * h_);
     cu_ResizeLinear<T>(tmp, *this);
@@ -128,6 +149,13 @@ void Image<T>::resize(const float factor)
 template<typename T>
 void Image<T>::resize(const float factor, const Image<uchar>& mask)
 {
+    if (factor == 1.f)
+        return;
+
+    // Mask on input resolution
+    assert(mask.width() == w_);
+    assert(mask.height() == h_);
+        
     // Allocates, but doesnt set initial value
     Image<T> tmp(nullptr, factor * w_, factor * h_);
     cu_ResizeLinear<T>(tmp, *this, mask);
@@ -137,5 +165,9 @@ void Image<T>::resize(const float factor, const Image<uchar>& mask)
 template<typename T>
 void Image<T>::mask(const Image<uchar>& mask)
 {
+    // Mask on input resolution
+    assert(mask.width() == w_);
+    assert(mask.height() == h_);
+
     cu_ApplyMask<T>(*this, mask);
 }

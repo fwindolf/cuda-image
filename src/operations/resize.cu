@@ -11,6 +11,41 @@
 namespace cuimage
 {
 
+__device__ float d_pixel(const int p, const float f)
+{
+#if USE_HALF_PIXEL_OFFSET
+    return ((p - 0.5) / f) + 0.5;
+#else
+    return p / f;
+#endif
+}
+
+__device__ int2 d_surrounding(const int p, const int min, const int max)
+{
+#if USE_HALF_PIXEL_OFFSET
+    const int px0 = clamp<int>(floor(p - 0.5), min, max);
+    const int px1 = clamp<int>( ceil(p - 0.5), min, max);
+#else
+    const int px0 = clamp<int>(floor(p), min, max);
+    const int px1 = clamp<int>( ceil(p), min, max);
+#endif
+
+    return make_int2(px0, px1);
+}
+
+__device__ int2 d_closest(const float p)
+{
+#if USE_HALF_PIXEL_OFFSET
+    const int pp = int(p) + 1;
+    const int pm = int(p);
+#else
+    const int pp = (int)ceil(p);
+    const int pm = (int)floor(p);
+#endif
+
+    return make_int2(pm, pp);
+}
+
 template <typename T>
 __device__ T d_interpolate(const DevPtr<T>& image, const int px, const int py, const float fx, const float fy)
 {
@@ -18,58 +53,71 @@ __device__ T d_interpolate(const DevPtr<T>& image, const int px, const int py, c
     const int h_old = image.height;    
 
     // New pixels in old coordinate system
-#if USE_HALF_PIXEL_OFFSET
-    const float px_ = ((px - 0.5) / fx) + 0.5;
-    const float py_ = ((py - 0.5) / fy) + 0.5;
-#else
-    const float px_ = px / fx;
-    const float py_ = py / fy;
-#endif
+    const float px_ = d_pixel(px, fx);
+    const float py_ = d_pixel(py, fy);
 
     // Surrounding pixels
-#if USE_HALF_PIXEL_OFFSET
-    const int px0 = clamp<int>(floor(px_ - 0.5), 0, w_old - 1);
-    const int px1 = clamp<int>(ceil(px_ - 0.5),  0, w_old - 1);
-    const int py0 = clamp<int>(floor(py_ - 0.5), 0, h_old - 1);
-    const int py1 = clamp<int>(ceil(py_ - 0.5), 0, h_old - 1);
-#else
-    const int px0 = clamp<int>(floor(px_), 0, w_old - 1);
-    const int px1 = clamp<int>(ceil(px_),  0, w_old - 1);
-    const int py0 = clamp<int>(floor(py_), 0, h_old - 1);
-    const int py1 = clamp<int>(ceil(py_), 0, h_old - 1);
-#endif
+    const int2 ppx = d_surrounding(px_, 0, w_old - 1);
+    const int2 ppy = d_surrounding(py_, 0, h_old - 1);
 
-    const T a00 = image(px0, py0);
-    const T a10 = image(px1, py0);
-    const T a01 = image(px0, py1);
-    const T a11 = image(px1, py1);
+    const T a00 = image(ppx.x, ppy.x);
+    const T a10 = image(ppx.y, ppy.x);
+    const T a01 = image(ppx.x, ppy.y);
+    const T a11 = image(ppx.y, ppy.y);
 
     if (isnan(a00) && isnan(a10) && isnan(a01) && isnan(a11))
         return a00;
     
     // In x direction
-#if USE_HALF_PIXEL_OFFSET
-    const int pxp = int(px_) + 1;
-    const int pxm = int(px_);
-#else
-    const int pxp = (int)ceil(px_);
-    const int pxm = (int)floor(px_);
-#endif
+    const int2 pxn = d_closest(px_);
 
-    T ax0 = interpolate_linear(a00, a10, pxm, pxp, px_);
-    T ax1 = interpolate_linear(a01, a11, pxm, pxp, px_);
+    const T ax0 = d_interpolate_linear(a00, a10, pxn.x, pxn.y, px_);
+    const T ax1 = d_interpolate_linear(a01, a11, pxn.x, pxn.y, px_);
 
     // in y direction
-#if USE_HALF_PIXEL_OFFSET
-    const int pyp = int(py_) + 1;
-    const int pym = int(py_);
-#else
-    const int pyp = (int)ceil(py_);
-    const int pym = (int)floor(py_);
-#endif
+    const int2 pyn = d_closest(py_);
 
-    return interpolate_linear(ax0, ax1, pym, pyp, py_);
+    return d_interpolate_linear(ax0, ax1, pyn.x, pyn.y, py_);
 }
+
+template <typename T>
+__device__ T d_interpolate_masked(const DevPtr<T>& image, const DevPtr<uchar>& mask, const int px, const int py, const float fx, const float fy)
+{
+    const int w_old = image.width;
+    const int h_old = image.height;    
+
+    // New pixels in old coordinate system
+    const float px_ = d_pixel(px, fx);
+    const float py_ = d_pixel(py, fy);
+
+    // Surrounding pixels
+    const int2 ppx = d_surrounding(px_, 0, w_old - 1);
+    const int2 ppy = d_surrounding(py_, 0, h_old - 1);
+
+    const T a00 = image(ppx.x, ppy.x);
+    const T a10 = image(ppx.y, ppy.x);
+    const T a01 = image(ppx.x, ppy.y);
+    const T a11 = image(ppx.y, ppy.y);
+
+    const uchar m00 = mask(ppx.x, ppy.x);
+    const uchar m10 = mask(ppx.y, ppy.x);
+    const uchar m01 = mask(ppx.x, ppy.y);
+    const uchar m11 = mask(ppx.y, ppy.y);
+
+    if (isnan(a00) && isnan(a10) && isnan(a01) && isnan(a11))
+        return a00;
+    
+    // In x direction
+    const int2 pxn = d_closest(px_);
+
+    const T ax0 = d_interpolate_linear_masked(a00, a10, m00, m10, pxn.x, pxn.y, px_);
+    const T ax1 = d_interpolate_linear_masked(a01, a11, m01, m11, pxn.x, pxn.y, px_);
+
+    // in y direction
+    const int2 pyn = d_closest(py_);
+
+    return d_interpolate_linear(ax0, ax1, pyn.x, pyn.y, py_);
+} 
 
 
 template <typename T>
@@ -93,17 +141,11 @@ __global__ void g_ResizeLinear(DevPtr<T> output, const DevPtr<T> input, const De
 
     if(pos.x >= output.width || pos.y >= output.height)
         return;
-
-    if (!mask(pos.x, pos.y))
-    {
-        output(pos.x, pos.y) = make<T>(0);
-        return;
-    }
     
     const float fx = (float)output.width / input.width;
     const float fy = (float)output.height / input.height;
 
-    output(pos.x, pos.y) = d_interpolate(input, pos.x, pos.y, fx, fy);
+    output(pos.x, pos.y) = d_interpolate_masked(input, mask, pos.x, pos.y, fx, fy);
 }
 
 template <typename T>

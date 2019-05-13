@@ -16,7 +16,7 @@ TEST(InterpolationLinearTest, returns_interpolated_value_in_range)
 
     // interpolated value is on linear function between 0 - 1
     for (int i = 0; i < 11; i++)
-        EXPECT_FLOAT_EQ(px[i], interpolate_linear(v1, v2, pm, pp, px[i]));
+        EXPECT_FLOAT_EQ(px[i], d_interpolate_linear(v1, v2, pm, pp, px[i]));
 }
 
 TEST(InterpolationLinearTest, works_for_large_range)
@@ -30,7 +30,7 @@ TEST(InterpolationLinearTest, works_for_large_range)
 
     // interpolated value is on linear function between 0 - 1
     for (int i = 0; i < 6; i++)
-        EXPECT_FLOAT_EQ(px[i] / 100.f, interpolate_linear(v1, v2, pm, pp, px[i]));
+        EXPECT_FLOAT_EQ(px[i] / 100.f, d_interpolate_linear(v1, v2, pm, pp, px[i]));
 }
 
 
@@ -44,7 +44,7 @@ TEST(InterpolationLinearTest, works_for_uchar)
 
     // 0.7 + 1.5 = 2.2 -> 2
     uchar res = 2;
-    EXPECT_EQ(res, interpolate_linear(v1, v2, pm, pp, px));
+    EXPECT_EQ(res, d_interpolate_linear(v1, v2, pm, pp, px));
 }
 
 TEST(InterpolationLinearTest, works_for_float_vector_types)
@@ -55,7 +55,7 @@ TEST(InterpolationLinearTest, works_for_float_vector_types)
     int pm = 0, pp = 1;
     float px = 0.5f;
     
-    float3 res = interpolate_linear(v1, v2, pm, pp, px);
+    float3 res = d_interpolate_linear(v1, v2, pm, pp, px);
     float3 exp = make_float3(0.5f, 0.5f, -0.5f);
 
     EXPECT_FLOAT_EQ(exp.x, res.x);
@@ -71,7 +71,7 @@ TEST(InterpolationLinearTest, works_for_uchar_vector_types)
     int pm = 0, pp = 1;
     float px = 0.5f;
     
-    uchar4 res = interpolate_linear(v1, v2, pm, pp, px);
+    uchar4 res = d_interpolate_linear(v1, v2, pm, pp, px);
     uchar4 exp = make_uchar4(25, 25, 125, 175);
 
     EXPECT_FLOAT_EQ(exp.x, res.x);
@@ -89,7 +89,7 @@ TEST(InterpolationLinearTest, works_for_int_vector_types)
     int pm = 0, pp = 1;
     float px = 0.5f;
     
-    int2 res = interpolate_linear(v1, v2, pm, pp, px);
+    int2 res = d_interpolate_linear(v1, v2, pm, pp, px);
     int2 exp = make_int2(25, 5);
 
     EXPECT_FLOAT_EQ(exp.x, res.x);

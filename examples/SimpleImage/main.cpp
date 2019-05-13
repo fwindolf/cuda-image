@@ -35,15 +35,17 @@ int main(int argc, char** argv)
     std::cout << "min = " << grey.min() << std::endl;
     std::cout << "max = " << grey.max() << std::endl;
     std::cout << "mean = " << grey.mean() << std::endl;
-    std::cout << "median= " << grey.median() << std::endl;
+    //std::cout << "median = " << grey.median() << std::endl;
     std::cout << "norm1 = " << grey.norm1() << std::endl;
     std::cout << "norm2 = " << grey.norm2() << std::endl;
     
     Image<float> copy;
     grey.copyTo(copy);
-
-    std::cout << "min = " << copy.min() << std::endl;
-    std::cout << "max = " << copy.max() << std::endl;
+    copy.resize(200, 200);
+    
+    Image<uchar> mask = copy.as<uchar>() * (uchar)255;
+    mask.threshold(255, 255, 0); // replace white area with 0s, everything grey with 255s
+    copy.resize(2.f, mask);
 
     copy.show("Grey Copy", COLOR_TYPE_GREY_F);       
 }
