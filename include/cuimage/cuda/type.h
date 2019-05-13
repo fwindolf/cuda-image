@@ -98,6 +98,28 @@ template<> struct is_vector_type<int2  > : std::true_type {};
 template<> struct is_vector_type<int3  > : std::true_type {};
 template<> struct is_vector_type<int4  > : std::true_type {};
 
+template <typename T>
+struct is_extended_vector_type : std::false_type {};
+
+template<> struct is_extended_vector_type<float > : std::true_type {};
+template<> struct is_extended_vector_type<float1> : std::true_type {};
+template<> struct is_extended_vector_type<float2> : std::true_type {};
+template<> struct is_extended_vector_type<float3> : std::true_type {};
+template<> struct is_extended_vector_type<float4> : std::true_type {};
+
+template<> struct is_extended_vector_type<uchar > : std::true_type {};
+template<> struct is_extended_vector_type<uchar1> : std::true_type {};
+template<> struct is_extended_vector_type<uchar2> : std::true_type {};
+template<> struct is_extended_vector_type<uchar3> : std::true_type {};
+template<> struct is_extended_vector_type<uchar4> : std::true_type {};
+
+template<> struct is_extended_vector_type<int   > : std::true_type {};
+template<> struct is_extended_vector_type<int1  > : std::true_type {};
+template<> struct is_extended_vector_type<int2  > : std::true_type {};
+template<> struct is_extended_vector_type<int3  > : std::true_type {};
+template<> struct is_extended_vector_type<int4  > : std::true_type {};
+
+
 /***********************************************************************************
  * Vector type base type
  ***********************************************************************************/
@@ -308,38 +330,5 @@ std::ostream& operator<<(std::ostream& os, const T& v)
     os << "(" << v.x << "," << v.y << "," << v.z << "," << v.w << ")";
     return os;
 }
-
-/**
- * New template aliases in C++14 only
- *
-
-template <typename T1, typename T2>
-using IsSameBase = typename 
-    std::enable_if<
-        (is_float_type<T1>::value && is_float_type<T2>::value) || 
-        (is_uchar_type<T1>::value && is_uchar_type<T2>::value) || 
-        (is_int_type<T1>::value   && is_int_type<T2>::value), T1>::type* = nullptr;
-
-template <typename T1, typename T2>
-using IsSameChannels = typename 
-    std::enable_if<
-        (has_4_channels<T>::value && has_4_channels<TO>::value) ||
-        (has_3_channels<T>::value && has_3_channels<TO>::value) ||
-        (has_2_channels<T>::value && has_2_channels<TO>::value) ||
-        (has_1_channels<T>::value && has_1_channels<TO>::value) ||
-        (has_0_channels<T>::value && has_0_channels<TO>::value), T1>::type* = nullptr;
-
-template <typename T1, typename T2>
-using IsSame = typename 
-    std::enable_if<(
-        (is_float_type<T1>::value && is_float_type<T2>::value) || 
-        (is_uchar_type<T1>::value && is_uchar_type<T2>::value) || 
-        (is_int_type<T1>::value   && is_int_type<T2>::value)) && (
-        (has_4_channels<T>::value && has_4_channels<TO>::value) ||
-        (has_3_channels<T>::value && has_3_channels<TO>::value) ||
-        (has_2_channels<T>::value && has_2_channels<TO>::value) ||
-        (has_1_channels<T>::value && has_1_channels<TO>::value) ||
-        (has_0_channels<T>::value && has_0_channels<TO>::value)), T1::type* = nullptr;
-*/
 
 } // namespace cuimage

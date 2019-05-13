@@ -13,37 +13,37 @@ namespace cuimage
 /**
  * @brief Create a new T from a single input 
  */
-template <typename T>
+template <typename T, typename std::enable_if<is_extended_vector_type<T>::value, T>::type* = nullptr>
 __host__ __device__ T make(const float v);
 
 /**
  * @brief overload < operator to work with all vector types
  */
-template <typename T>
+template <typename T, typename std::enable_if<is_extended_vector_type<T>::value, T>::type* = nullptr>
 __host__ __device__ bool operator<(const T& lhs, const T& rhs);
 
 /**
  * @brief overload <= operator to work with all vector types
  */
-template <typename T>
+template <typename T, typename std::enable_if<is_extended_vector_type<T>::value, T>::type* = nullptr>
 __host__ __device__ bool operator<=(const T& lhs, const T& rhs);
 
 /**
  * @brief overload > operator to work with all vector types
  */
-template <typename T>
+template <typename T, typename std::enable_if<is_extended_vector_type<T>::value, T>::type* = nullptr>
 __host__ __device__ bool operator>(const T& lhs, const T& rhs);
 
 /**
  * @brief overload >= operator to work with all vector types
  */
-template <typename T>
+template <typename T, typename std::enable_if<is_extended_vector_type<T>::value, T>::type* = nullptr>
 __host__ __device__ bool operator>=(const T& lhs, const T& rhs);
 
 /**
  * @brief overload == operator to work with all vector types
  */
-template <typename T>
+template <typename T, typename std::enable_if<is_extended_vector_type<T>::value, T>::type* = nullptr>
 __host__ __device__ bool operator==(const T& lhs, const T& rhs);
 
 
@@ -51,29 +51,14 @@ __host__ __device__ bool operator==(const T& lhs, const T& rhs);
 /**
  * @brief overload + operator to work with all vector types
  */
-/*template <typename T, 
-          typename std::enable_if<
-                std::is_same<T, float1>::value &&
-                std::is_same<T, float2>::value &&
-                std::is_same<T, float3>::value &&
-                std::is_same<T, float4>::value &&
-                std::is_same<T, uchar1>::value &&
-                std::is_same<T, uchar2>::value &&
-                std::is_same<T, uchar3>::value &&
-                std::is_same<T, uchar4>::value &&
-                std::is_same<T, int1  >::value &&
-                std::is_same<T, int2  >::value &&
-                std::is_same<T, int3  >::value &&
-                std::is_same<T, int4  >::value, T>::type* = nullptr >
-*/
-template <typename T>
+template <typename T, typename std::enable_if<is_extended_vector_type<T>::value, T>::type* = nullptr>
 __host__ __device__ T operator+(const T& lhs, const T& rhs);
 
 /**
  * @brief overload + operator to add broadcasted
  * Omit overloading for basic types, so our definition doesnt interfere with enums, ...
  */
-template <typename T, typename std::enable_if<is_vector_type<T>::value, T>::type* = nullptr>
+template <typename T, typename std::enable_if<is_extended_vector_type<T>::value, T>::type* = nullptr>
 __host__ __device__ T operator+(const float& lhs, const T& rhs)
 {
     return make<T>(lhs) + rhs;
@@ -83,7 +68,7 @@ __host__ __device__ T operator+(const float& lhs, const T& rhs)
 /**
  * @brief overload + operator to add broadcasted
  */
-template <typename T, typename std::enable_if<is_vector_type<T>::value, T>::type* = nullptr>
+template <typename T, typename std::enable_if<is_extended_vector_type<T>::value, T>::type* = nullptr>
 __host__ __device__ T operator+(const T& lhs, const float& rhs)
 {
     return make<T>(rhs) + lhs;
@@ -92,7 +77,7 @@ __host__ __device__ T operator+(const T& lhs, const float& rhs)
 /**
  * @brief overload += operator to work with all vector types
  */
-template <typename T>
+template <typename T, typename std::enable_if<is_extended_vector_type<T>::value, T>::type* = nullptr>
 __host__ __device__ T& operator+=(T& lhs, const T& rhs)
 {
     lhs = lhs + rhs;
@@ -102,13 +87,13 @@ __host__ __device__ T& operator+=(T& lhs, const T& rhs)
 /**
  * @brief overload - operator to work with all vector types
  */
-template <typename T>
+template <typename T, typename std::enable_if<is_extended_vector_type<T>::value, T>::type* = nullptr>
 __host__ __device__ T operator-(const T& lhs, const T& rhs);
 
 /**
  * @brief overload - operator to subtract broadcasted
  */
-template <typename T, typename std::enable_if<is_vector_type<T>::value, T>::type* = nullptr>
+template <typename T, typename std::enable_if<is_extended_vector_type<T>::value, T>::type* = nullptr>
 __host__ __device__ T operator-(const float& lhs, const T& rhs)
 {
     return make<T>(lhs) - rhs;
@@ -117,7 +102,7 @@ __host__ __device__ T operator-(const float& lhs, const T& rhs)
 /**
  * @brief overload - operator to subtract broadcasted
  */
-template <typename T, typename std::enable_if<is_vector_type<T>::value, T>::type* = nullptr>
+template <typename T, typename std::enable_if<is_extended_vector_type<T>::value, T>::type* = nullptr>
 __host__ __device__ T operator-(const T& lhs, const float& rhs)
 {
     return lhs - make<T>(rhs);
@@ -126,7 +111,7 @@ __host__ __device__ T operator-(const T& lhs, const float& rhs)
 /**
  * @brief overload -= operator to work with all vector types
  */
-template <typename T>
+template <typename T, typename std::enable_if<is_extended_vector_type<T>::value, T>::type* = nullptr>
 __host__ __device__ T& operator-=(T& lhs, const T& rhs)
 {
     lhs = lhs - rhs;
@@ -136,13 +121,13 @@ __host__ __device__ T& operator-=(T& lhs, const T& rhs)
 /**
  * @brief overload * operator to work with all vector types
  */
-template <typename T>
+template <typename T, typename std::enable_if<is_extended_vector_type<T>::value, T>::type* = nullptr>
 __host__ __device__ T operator*(const T& lhs, const T& rhs);
 
 /**
  * @brief overload * operator to multiply broadcasted
  */
-template <typename T, typename std::enable_if<is_vector_type<T>::value, T>::type* = nullptr>
+template <typename T, typename std::enable_if<is_extended_vector_type<T>::value, T>::type* = nullptr>
 __host__ __device__ T operator*(const T& lhs, const float& rhs)
 {
     return make<T>(rhs) * lhs;
@@ -152,7 +137,7 @@ __host__ __device__ T operator*(const T& lhs, const float& rhs)
  * @brief overload * operator to multiply broadcasted
  * Omit overloading for basic types, so our definition doesnt interfere with enums, ...
  */
-template <typename T, typename std::enable_if<is_vector_type<T>::value, T>::type* = nullptr>
+template <typename T, typename std::enable_if<is_extended_vector_type<T>::value, T>::type* = nullptr>
 __host__ __device__ T operator*(const float& lhs, const T& rhs)
 {
     return rhs * lhs; // use operator with switched types
@@ -162,7 +147,7 @@ __host__ __device__ T operator*(const float& lhs, const T& rhs)
 /**
  * @brief overload *= operator to work with all vector types
  */
-template <typename T>
+template <typename T, typename std::enable_if<is_extended_vector_type<T>::value, T>::type* = nullptr>
 __host__ __device__ T& operator*=(T& lhs, const T& rhs)
 {
     lhs = lhs * rhs;
@@ -172,13 +157,13 @@ __host__ __device__ T& operator*=(T& lhs, const T& rhs)
 /**
  * @brief overload / operator to work with all vector types
  */
-template <typename T>
+template <typename T, typename std::enable_if<is_extended_vector_type<T>::value, T>::type* = nullptr>
 __host__ __device__ T operator/(const T& lhs, const T& rhs);
 
 /**
  * @brief overload / operator to divide broadcasted
  */
-template <typename T, typename std::enable_if<is_vector_type<T>::value, T>::type* = nullptr>
+template <typename T, typename std::enable_if<is_extended_vector_type<T>::value, T>::type* = nullptr>
 __host__ __device__ T operator/(const float& lhs, const T& rhs)
 {
     return make<T>(lhs) / rhs;
@@ -187,7 +172,7 @@ __host__ __device__ T operator/(const float& lhs, const T& rhs)
 /**
  * @brief overload / operator to divide broadcasted
  */
-template <typename T, typename std::enable_if<is_vector_type<T>::value, T>::type* = nullptr>
+template <typename T, typename std::enable_if<is_extended_vector_type<T>::value, T>::type* = nullptr>
 __host__ __device__ T operator/(const T& lhs, const float& rhs)
 {
     return lhs / make<T>(rhs);
@@ -196,7 +181,7 @@ __host__ __device__ T operator/(const T& lhs, const float& rhs)
 /**
  * @brief overload /= operator to work with all vector types
  */
-template <typename T>
+template <typename T, typename std::enable_if<is_extended_vector_type<T>::value, T>::type* = nullptr>
 __host__ __device__ T& operator/=(T& lhs, const T& rhs)
 {
     lhs = lhs / rhs;
