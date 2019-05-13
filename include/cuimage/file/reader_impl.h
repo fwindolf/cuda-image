@@ -1,6 +1,122 @@
 
 
-template<typename TO>
+template <typename TO>
+DevPtr<TO> convertPng(const DevPtr<uchar3>& input);
+
+template <>
+DevPtr<float3> convertPng(const DevPtr<uchar3>& input)
+{
+    DevPtr<float3> output(input.w, input.h); // Allocates
+    cu_Convert<uchar3, float3>(output, input);
+    return output;
+}
+
+template <>
+DevPtr<float> convertPng(const DevPtr<uchar3>& input)
+{
+    DevPtr<float> output(input.w, input.h); // Allocates
+    DevPtr<float3> tmp(intput.w, input.h); // Allocates
+    cu_Convert<uchar3, float3>(tmp, input);
+    cu_ColorToGray<float3, float>(output, tmp);
+    tmp.free();
+    return output;
+}
+
+template <typename T, typename TO>
+DevPtr<TO> convertPng(const DevPtr<T>& input);
+
+template <typename T, typename TO, typename 
+    std::enable_if<std::is_same<T, TO>::value, T>::type* = nullptr>
+DevPtr<TO> convertPng(const DevPtr<T>& input)
+{
+    return input;
+}
+
+template <typename T, typename TO, typename 
+    std::enable_if<!is_same_type<T, TO>::value && has_same_channels<T, TO>::value, T>::type* = nullptr>
+DevPtr<TO> convertPng(const DevPtr<T>& input)
+{
+    DevPtr<TO> output(input.w, input.h); // Allocates
+    cu_Convert<T, TO>(output, input);
+    return output;
+}
+
+template <typename T, typename TO, typename 
+    std::enable_if<is_same_type<T, TO>::value && !has_same_channels<T, TO>::value && 
+                   (has_0_channels<TO>::value || has_1_channels<TO>::value), T>::type* = nullptr>
+DevPtr<TO> convertPng(const DevPtr<T>& input)
+{
+    DevPtr<TO> output(input.w, input.h); // Allocates
+    cu_ColorToGray<T, TO>(output, input);
+    return output;
+}
+
+template <typename T, typename TO, typename 
+    std::enable_if<is_same_type<T, TO>::value && !has_same_channels<T, TO>::value && 
+                   (has_4_channels<TO>::value || has_3_channels<TO>::value), T>::type* = nullptr>
+DevPtr<TO> convertPng(const DevPtr<T>& input)
+{
+    DevPtr<TO> output(input.w, input.h); // Allocates
+    cu_ColorToColor<T, TO>(output, input);
+    return output;
+}
+
+DevPtr<float> convertPng(const DevPtr<uchar4>& input)
+{
+    
+}
+
+
+
+DevPtr<TO> readPng(const std::string fileName)
+{
+    assert(type(fileName) == "PNG");
+
+    size_t w, h, c;
+    std::vector<uchar> image = readPng(fileName, w, h, c); 
+    assert(c == 4);
+
+    DevPtr<uchar4> devptr = upload<char, char4>(image.data(), w, h, c);
+    DevPtr<TO> output = convertPng<TO>(devPtr);
+    devptr.free();
+    return output;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+template<typename TO, typename std::enable_if<is_float_type<TO>::value, TO>::type* = nullptr>
+DevPtr<TO> FileReader::read(const std::string fileName, size_t& width, size_t& height, size_t& c) const
+{
+    std::string fileType = fileName.substr(fileName.find_last_of(".") + 1);
+    std::transform(fileType.begin(), fileType.end(), fileType.begin(), ::toupper);
+
+    assert(fileType == "EXR");
+
+    std::vector<float> image = readExr(fileName, width, height, c);
+    auto devptr = upload<float, float>(image.data(), width, height, c);
+    return convert<float, TO>(devptr);
+}
+
+template<typename TO, typename std::enable_if<!is_float_type<TO>::value, TO>::type* = nullptr>
 DevPtr<TO> FileReader::read(const std::string fileName, size_t& width, size_t& height, size_t& c) const
 {
     std::string fileType = fileName.substr(fileName.find_last_of(".") + 1);
@@ -25,12 +141,6 @@ DevPtr<TO> FileReader::read(const std::string fileName, size_t& width, size_t& h
             throw std::runtime_error("Invalid numbers of channels in PNG file");        
         }            
     }
-    else if (fileType == "EXR")
-    {
-        std::vector<float> image = readExr(fileName, width, height, c);
-        auto devptr = upload<float, float>(image.data(), width, height, c);
-        return convert<float, TO>(devptr);
-    }
     else
     {
         throw std::runtime_error("Cannot read files of type " + fileType);        
@@ -54,18 +164,7 @@ DevPtr<TO> FileReader::upload(const T* h_data, const size_t width, const size_t 
  * Same type
  */
 template <typename T, typename TO, typename
-    std::enable_if<
-        (
-            (is_float_type<T>::value && is_float_type<TO>::value) ||
-            (is_uchar_type<T>::value && is_uchar_type<TO>::value) ||
-            (is_int_type<T>::value   && is_int_type<TO>::value)
-        ) && (
-            (has_4_channels<T>::value && has_4_channels<TO>::value) ||
-            (has_3_channels<T>::value && has_3_channels<TO>::value) ||
-            (has_2_channels<T>::value && has_2_channels<TO>::value) ||
-            (has_1_channels<T>::value && has_1_channels<TO>::value) ||
-            (has_0_channels<T>::value && has_0_channels<TO>::value)
-        ), T>::type* = nullptr>
+    std::enable_if<std::is_same<T, TO>::value, T>::type* = nullptr>
 DevPtr<TO> convertDevPtr(const DevPtr<T>& input)
 {   
     DevPtr<TO> output(input);
@@ -76,84 +175,110 @@ DevPtr<TO> convertDevPtr(const DevPtr<T>& input)
  * Same channels, convert only type
  */
 template <typename T, typename TO, typename
-    std::enable_if<
-        (
-            (is_float_type<T>::value && !is_float_type<TO>::value) ||
-            (is_uchar_type<T>::value && !is_uchar_type<TO>::value) ||
-            (is_int_type<T>::value   && !is_int_type<TO>::value)
-        ) && (
-            (has_4_channels<T>::value && has_4_channels<TO>::value) ||
-            (has_3_channels<T>::value && has_3_channels<TO>::value) ||
-            (has_2_channels<T>::value && has_2_channels<TO>::value) ||
-            (has_1_channels<T>::value && has_1_channels<TO>::value) ||
-            (has_0_channels<T>::value && has_0_channels<TO>::value)
-        ), T>::type* = nullptr>
-DevPtr<TO> convertDevPtr(const DevPtr<T>& input_same_channels)
+    std::enable_if<!std::is_same<T, TO>::value && !is_same_type<T, TO>::value && has_same_channels<T, TO>::value, T>::type* = nullptr>
+DevPtr<TO> convertDevPtr(const DevPtr<T>& input)
 {  
-    DevPtr<TO> output(input_same_channels.width, input_same_channels.height); // Allocates
-    cu_Convert<T, TO>(output, input_same_channels);
+    DevPtr<TO> output(input.width, input.height); // Allocates
+    cu_Convert<T, TO>(output, input);
     return output;
 }
 
 /**
- * Same type, convert only channels
+ * Same type, convert color to gray
  */
 template <typename T, typename TO, typename
-    std::enable_if<
-        (
-            (is_float_type<T>::value && is_float_type<TO>::value) ||
-            (is_uchar_type<T>::value && is_uchar_type<TO>::value) ||
-            (is_int_type<T>::value   && is_int_type<TO>::value)
-        ) && (
-            (has_4_channels<T>::value && !has_4_channels<TO>::value) ||
-            (has_3_channels<T>::value && !has_3_channels<TO>::value) ||
-            (has_2_channels<T>::value && !has_2_channels<TO>::value) ||
-            (has_1_channels<T>::value && !has_1_channels<TO>::value) ||
-            (has_0_channels<T>::value && !has_0_channels<TO>::value)
-        ), T>::type* = nullptr>
-DevPtr<TO> convertDevPtr(const DevPtr<T>& input_same_type)
+    std::enable_if<is_same_type<T, TO>::value && 
+       ((has_4_channels<T>::value && has_1_channels<TO>::value) ||
+        (has_3_channels<T>::value && has_1_channels<TO>::value) ||
+        (has_4_channels<T>::value && has_0_channels<TO>::value) ||
+        (has_3_channels<T>::value && has_0_channels<TO>::value))
+    , T>::type* = nullptr>
+DevPtr<TO> convertDevPtr(const DevPtr<T>& input)
 {
-    DevPtr<TO> output(input_same_type.width, input_same_type.height); // Allocates
-    
-    if (channels<TO>() >= 3 && channels<T>() == 1)
-    {
-        cu_GrayToColor<T, TO>(output, input_same_type);
-        return output;
-    }
-    else if (channels<TO>() == 1 && channels<T>() >= 3)
-    {           
-        cu_ColorToGray<T, TO>(output, input_same_type);
-        return output;
-    }
-    else if (channels<T>() >= 3 && channels<T>() >= 3)
-    {
-        cu_ColorToColor<T, TO>(output, input_same_type);
-        return output;
-    }
-    
-    throw std::runtime_error("Could not convert from input (" + std::to_string(channels<T>()) + ") to output (" + std::to_string(channels<TO>()) + ") channels!");
+    DevPtr<TO> output(input.width, input.height); // Allocates
+    cu_ColorToGray<T, TO>(output, input);
+    return output;
 }
 
 /**
- * Different type and channels do not match
+ * Same type, convert gray to color
  */
 template <typename T, typename TO, typename
-    std::enable_if<
-       (
-            (is_float_type<T>::value && !is_float_type<TO>::value) ||
-            (is_uchar_type<T>::value && !is_uchar_type<TO>::value) ||
-            (is_int_type<T>::value   && !is_int_type<TO>::value)
-        ) && (
-            (has_4_channels<T>::value && !has_4_channels<TO>::value) ||
-            (has_3_channels<T>::value && !has_3_channels<TO>::value) ||
-            (has_2_channels<T>::value && !has_2_channels<TO>::value) ||
-            (has_1_channels<T>::value && !has_1_channels<TO>::value) ||
-            (has_0_channels<T>::value && !has_0_channels<TO>::value)
-        ), T>::type* = nullptr>
-DevPtr<TO> convertDevPtr(const DevPtr<T>& input_different_type)
+    std::enable_if<is_same_type<T, TO>::value && 
+       ((has_0_channels<T>::value && has_3_channels<TO>::value) ||
+        (has_0_channels<T>::value && has_4_channels<TO>::value) ||
+        (has_1_channels<T>::value && has_3_channels<TO>::value) ||
+        (has_1_channels<T>::value && has_4_channels<TO>::value))
+    , T>::type* = nullptr>
+DevPtr<TO> convertDevPtr(const DevPtr<T>& input)
 {
-    throw std::runtime_error("No possible conversion between input and output type!");
+    DevPtr<TO> output(input.width, input.height); // Allocates
+    cu_GrayToColor<T, TO>(output, input);
+    return output;
 }
+
+/**
+ * Same type, convert color to color
+ */
+template <typename T, typename TO, typename
+    std::enable_if<is_same_type<T, TO>::value && 
+       ((has_4_channels<T>::value && has_3_channels<TO>::value) ||
+        (has_3_channels<T>::value && has_4_channels<TO>::value))
+    , T>::type* = nullptr>
+DevPtr<TO> convertDevPtr(const DevPtr<T>& input)
+{
+    DevPtr<TO> output(input.width, input.height); // Allocates
+    cu_ColorToColor<T, TO>(output, input);
+        return output;
+}
+
+
+#if 0
+
+template <typename T, typename TO, typename
+    std::enable_if<!is_same_type<T, TO>::value && !has_same_channels<T, TO>::value, T>::type* = nullptr>
+DevPtr<TO> convertDevPtr(const DevPtr<T>& input);
+
+/**
+ * Specialization for common types: uchar3 to float
+ */
+template <>
+DevPtr<float> convertDevPtr(const DevPtr<uchar3>& input)
+{
+    DevPtr<float3> tmp = convertDevPtr<uchar3, float3>(input);
+    DevPtr<float> output = convertDevPtr<float3, float>(tmp);
+    
+    tmp.free(); // Free the data that does not get wrapped by image
+    return output;
+}
+
+/**
+ * Specialization for common types: uchar4 to float3
+ */
+template <>
+DevPtr<float3> convertDevPtr(const DevPtr<uchar4>& input)
+{
+    DevPtr<float4> tmp = convertDevPtr<uchar4, float4>(input);
+    DevPtr<float3> output = convertDevPtr<float4, float3>(tmp);
+        
+    tmp.free(); // Free the data that does not get wrapped by image
+    return output;
+}
+
+/**
+ * Specialization for common types: float to uchar3
+ */
+template <>
+DevPtr<uchar3> convertDevPtr(const DevPtr<float>& input)
+{
+    DevPtr<float3> tmp = convertDevPtr<float, float3>(input);
+    DevPtr<uchar3> output = convertDevPtr<float3, uchar3>(tmp);
+
+    tmp.free();// Free the data that does not get wrapped by image
+    return output;
+}
+
+#endif
 
 template <typename T, typename TO>
 DevPtr<TO> FileReader::convert(const DevPtr<T>& input) const

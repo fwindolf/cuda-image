@@ -90,7 +90,7 @@ __global__ void g_Convert(DevPtr<TO> output, const DevPtr<T> input)
 }
 
 template <typename T, typename TO>
-void cu_GrayToColor(DevPtr<TO> output, const DevPtr<T> input)
+void cu_GrayToColor(DevPtr<TO> output, const DevPtr<T>& input)
 {
     assert(output.width == input.width);
     assert(output.height == input.height);
@@ -105,7 +105,7 @@ void cu_GrayToColor(DevPtr<TO> output, const DevPtr<T> input)
 }
 
 template <typename T, typename TO>
-void cu_ColorToGray(DevPtr<TO> output, const DevPtr<T> input)
+void cu_ColorToGray(DevPtr<TO> output, const DevPtr<T>& input)
 {
     assert(output.width == input.width);
     assert(output.height == input.height);
@@ -120,7 +120,7 @@ void cu_ColorToGray(DevPtr<TO> output, const DevPtr<T> input)
 }
 
 template <typename T, typename TO>
-void cu_ColorToColor(DevPtr<TO> output, const DevPtr<T> input)
+void cu_ColorToColor(DevPtr<TO> output, const DevPtr<T>& input)
 {
     assert(output.width == input.width);
     assert(output.height == input.height);
@@ -135,7 +135,7 @@ void cu_ColorToColor(DevPtr<TO> output, const DevPtr<T> input)
 }
 
 template <typename T, typename TO>
-void cu_Convert(DevPtr<TO> output, const DevPtr<T> input)
+void cu_Convert(DevPtr<TO> output, const DevPtr<T>& input)
 {
     assert(output.width == input.width);
     assert(output.height == input.height);
@@ -153,7 +153,7 @@ void cu_Convert(DevPtr<TO> output, const DevPtr<T> input)
  * Explicit instantiations
  */
 #define INST_CONVERSION_FUNCTION(type, typeO, function) \
-    template void function(DevPtr<typeO>, const DevPtr<type>);
+    template void function(DevPtr<typeO>, const DevPtr<type>&);
 
 // All to all conversions with same channel
 FOR_EACH_0CHANNEL_TYPE(INST_CONVERSION_FUNCTION, float , cu_Convert)
@@ -184,9 +184,17 @@ FOR_EACH_4CHANNEL_TYPE(INST_CONVERSION_FUNCTION, int4  , cu_Convert)
 
 
 // Conversions from gray to color 
+FOR_EACH_0CHANNEL_TYPE(INST_CONVERSION_FUNCTION, float3, cu_GrayToColor)
+FOR_EACH_0CHANNEL_TYPE(INST_CONVERSION_FUNCTION, uchar3, cu_GrayToColor)
+FOR_EACH_0CHANNEL_TYPE(INST_CONVERSION_FUNCTION, int3  , cu_GrayToColor)
+
 FOR_EACH_1CHANNEL_TYPE(INST_CONVERSION_FUNCTION, float3, cu_GrayToColor)
 FOR_EACH_1CHANNEL_TYPE(INST_CONVERSION_FUNCTION, uchar3, cu_GrayToColor)
 FOR_EACH_1CHANNEL_TYPE(INST_CONVERSION_FUNCTION, int3  , cu_GrayToColor)
+
+FOR_EACH_0CHANNEL_TYPE(INST_CONVERSION_FUNCTION, float4, cu_GrayToColor)
+FOR_EACH_0CHANNEL_TYPE(INST_CONVERSION_FUNCTION, uchar4, cu_GrayToColor)
+FOR_EACH_0CHANNEL_TYPE(INST_CONVERSION_FUNCTION, int4  , cu_GrayToColor)
 
 FOR_EACH_1CHANNEL_TYPE(INST_CONVERSION_FUNCTION, float4, cu_GrayToColor)
 FOR_EACH_1CHANNEL_TYPE(INST_CONVERSION_FUNCTION, uchar4, cu_GrayToColor)

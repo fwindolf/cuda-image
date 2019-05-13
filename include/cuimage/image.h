@@ -53,6 +53,8 @@ public:
 
     Image(Image&& other);
 
+    Image(DevPtr<T>&& devPtr);
+
     Image(T* data, size_t w, size_t h);
 
     Image(const std::string& fileName);
@@ -241,6 +243,8 @@ public:
     friend Image<T>& operator/= <>(Image& a, const T& b); 
     
 private:
+    DevPtr<T> read(const std::string& fileName);
+
     std::unique_ptr<Visualizer> vis_;
     VisType visType_ = NONE;
 

@@ -12,16 +12,16 @@ namespace cuimage
 {
 
 template <typename T, typename TO>
-void cu_ColorToGray(DevPtr<TO> output, const DevPtr<T> input);
+void cu_ColorToGray(DevPtr<TO> output, const DevPtr<T>& input);
 
 template <typename T, typename TO>
-void cu_GrayToColor(DevPtr<TO> output, const DevPtr<T> input);
+void cu_GrayToColor(DevPtr<TO> output, const DevPtr<T>& input);
 
 template <typename T, typename TO>
-void cu_ColorToColor(DevPtr<TO> output, const DevPtr<T> input);
+void cu_ColorToColor(DevPtr<TO> output, const DevPtr<T>& input);
 
 template <typename T, typename TO>
-void cu_Convert(DevPtr<TO> output, const DevPtr<T> input);
+void cu_Convert(DevPtr<TO> output, const DevPtr<T>& input);
 
 
 

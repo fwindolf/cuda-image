@@ -22,6 +22,94 @@ FileReader::FileReader()
 {
 }
 
+ /**
+ * Read PNG as color
+ */
+DevPtr<uchar4> FileReader::readPng(const std::string fileName)
+{
+    assert(type(fileName) == "PNG");
+
+    size_t w, h, c;
+    std::vector<uchar> image = readPng(fileName, w, h, c);       
+    assert(c == 4);
+    return upload<uchar, uchar4>(image.data(), w, h, c);
+}
+
+/**
+ * Read PNG as color
+ */
+DevPtr<float3> FileReader::readPngF(const std::string fileName)
+{
+    assert(type(fileName) == "PNG");
+
+    size_t w, h, c;
+    std::vector<uchar> image = readPng(fileName, w, h, c);       
+    assert(c == 4);
+    DevPtr<uchar4> tmp = upload<uchar, uchar4>(image.data(), w, h, c);
+    DevPtr<float4> tmpf(w, h);
+    cu_Convert<uchar4, float4>(tmpf, tmp);
+    DevPtr<float3> output(w, h);
+    cu_ColorToColor<float4, float3>(output, tmpf);
+    tmp.free();
+    tmpf.free();
+    return output;
+}
+
+/**
+ * Read PNG as greyscale
+ */
+DevPtr<uchar> FileReader::readPngGrey(const std::string fileName)
+{
+    assert(type(fileName) == "PNG");
+
+    size_t w, h, c;
+    std::vector<uchar> image = readPng(fileName, w, h, c);
+    assert(c == 4);
+    DevPtr<uchar4> tmp = upload<uchar, uchar4>(image.data(), w, h, c);
+    DevPtr<uchar> output(w, h);
+    cu_ColorToGray<uchar4, uchar>(output, tmp);
+    tmp.free();
+    return output;
+}
+
+/**
+ * Read PNG as greyscale
+ */
+DevPtr<float> FileReader::readPngGreyF(const std::string fileName)
+{
+    assert(type(fileName) == "PNG");
+
+    size_t w, h, c;
+    std::vector<uchar> image = readPng(fileName, w, h, c);       
+    assert(c == 4);
+    DevPtr<uchar4> tmp = upload<uchar, uchar4>(image.data(), w, h, c);
+    DevPtr<float4> tmpf(w, h);
+    cu_Convert<uchar4, float4>(tmpf, tmp);
+    DevPtr<float> output(w, h);
+    cu_ColorToGray<float4, float>(output, tmpf);
+    tmp.free();
+    tmpf.free();
+    return output;
+}
+
+
+/**
+ * Read single channel EXR
+ */
+DevPtr<float> FileReader::readExr(const std::string fileName) const
+{
+    size_t w, h, c;
+    std::vector<float> image = readExr(fileName, w, h, c);
+    return upload<float, float>(image.data(), w, h, c);
+}
+
+std::string FileReader::type(const std::string fileName)
+{
+    std::string fileType = fileName.substr(fileName.find_last_of(".") + 1);
+    std::transform(fileType.begin(), fileType.end(), fileType.begin(), ::toupper);
+    return fileType;
+}
+
 std::vector<float> FileReader::readExr(const std::string fileName, size_t& width, size_t& height, size_t& channels) const
 {
     EXRVersion exr_version;

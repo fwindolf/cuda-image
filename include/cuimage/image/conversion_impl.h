@@ -34,7 +34,7 @@ Image<TO> Image<T>::asColor() const
 
     // Allocates, but doesnt set initial value
     Image<TO> output(nullptr, w_, h_);
-    cu_GrayToColor<T>(output, *this);
+    cu_GrayToColor<T, TO>(output, *this);
 
     return output;
 }
