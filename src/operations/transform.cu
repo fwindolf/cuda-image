@@ -116,6 +116,85 @@ void cu_SetTo(DevPtr<T> image, const T& value)
     cu_Transform(image, set_op);
 }
 
+template <typename T>
+struct Threshold
+{
+    Threshold(const T& threshold, const T& val)
+     : thres_(threshold), val_(val) {}
+
+    // Return a function ptr from lambda that sets the pixel to value
+    nvstd::function<void(T&)> __device__ getOp()
+    {
+        return [*this] __device__ (T& v) 
+        {
+            if (v > thres_)
+                v = val_;
+        };
+    }
+private:
+    const T thres_, val_;
+};
+
+template <typename T>
+void cu_Threshold(DevPtr<T> image, const T& threshold, const T& value)
+{
+    Threshold<T> thres_op(threshold, value);
+    cu_Transform(image, thres_op);
+}
+
+template <typename T>
+struct ThresholdInv
+{
+    ThresholdInv(const T& threshold, const T& val)
+     : thres_(threshold), val_(val) {}
+
+    // Return a function ptr from lambda that sets the pixel to value
+    nvstd::function<void(T&)> __device__ getOp()
+    {
+        return [*this] __device__ (T& v) 
+        {
+            if (v <= thres_)
+                v = val_;
+        };
+    }
+private:
+    const T thres_, val_;
+};
+
+template <typename T>
+void cu_ThresholdInv(DevPtr<T> image, const T& threshold, const T& value)
+{
+    ThresholdInv<T> thres_op(threshold, value);
+    cu_Transform(image, thres_op);
+}
+
+template <typename T>
+struct ThresholdLowHigh
+{
+    ThresholdLowHigh(const T& threshold, const T& low, const T& high)
+     : thres_(threshold), low_(low), high_(high) {}
+
+    // Return a function ptr from lambda that sets the pixel to value
+    nvstd::function<void(T&)> __device__ getOp()
+    {
+        return [*this] __device__ (T& v) 
+        {
+            if (v >= thres_)
+                v = high_;
+            else
+                v = low_;
+        };
+    }
+private:
+    const T thres_, low_, high_;
+};
+
+template <typename T>
+void cu_Threshold(DevPtr<T> image, const T& threshold, const T& low, const T& high)
+{
+    ThresholdLowHigh<T> thres_op(threshold, low, high);
+    cu_Transform(image, thres_op);
+}
 
 template <typename T, typename std::enable_if<has_0_channels<T>::value, T>::type* = nullptr>
 struct MedianOp
@@ -194,13 +273,22 @@ T cu_Median(DevPtr<T> image)
 #define DECLARE_REPLACE_FUNCTION(type, name) \
     template void name(DevPtr<type>, const type&, const type&);
 
+#define DECLARE_THRESHOLD_FUNCTION(type, name) \
+    template void name(DevPtr<type>, const type&, const type&, const type&);
+
 FOR_EACH_TYPE(DECLARE_TRANSFORM_FUNCTION, SetValue)
 FOR_EACH_TYPE(DECLARE_TRANSFORM_FUNCTION, ReplaceValue)
 FOR_EACH_TYPE(DECLARE_TRANSFORM_FUNCTION, ReplaceNan)
+FOR_EACH_TYPE(DECLARE_TRANSFORM_FUNCTION, Threshold)
+FOR_EACH_TYPE(DECLARE_TRANSFORM_FUNCTION, ThresholdInv)
+FOR_EACH_TYPE(DECLARE_TRANSFORM_FUNCTION, ThresholdLowHigh)
 
 FOR_EACH_TYPE(DECLARE_SET_FUNCTION, cu_SetTo)
 FOR_EACH_TYPE(DECLARE_SET_FUNCTION, cu_ReplaceNan)
 FOR_EACH_TYPE(DECLARE_REPLACE_FUNCTION, cu_Replace)
+FOR_EACH_TYPE(DECLARE_REPLACE_FUNCTION, cu_Threshold)
+FOR_EACH_TYPE(DECLARE_REPLACE_FUNCTION, cu_ThresholdInv)
+FOR_EACH_TYPE(DECLARE_THRESHOLD_FUNCTION, cu_Threshold)
 
 #define DECLARE_MEDIAN_FUNCTION(type, name) \
     template type name(DevPtr<type>);

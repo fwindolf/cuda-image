@@ -124,7 +124,14 @@ public:
      */
     void setTo(const T& value);
 
+    template<class Q = T, typename std::enable_if<!(is_float_type<Q>::value && has_0_channels<Q>::value), Q>::type* = nullptr>
+    void setTo(const float& value);
+
     void threshold(const T& threshold, const T& value);
+
+    void threshold(const T& threshold, const T& low, const T& high);
+    
+    void thresholdInv(const T& threshold, const T& value);
 
     void replace(const T& value, const T& with);
 

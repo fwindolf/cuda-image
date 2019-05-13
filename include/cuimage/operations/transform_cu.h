@@ -23,6 +23,18 @@ template <typename T>
 void cu_Threshold(DevPtr<T> image, const T& threshold, const T& value);
 
 /**
+ * Threshold the image so that every pixel above or equal to threshold is high, and below threshold is low 
+ */
+template <typename T>
+void cu_Threshold(DevPtr<T> image, const T& threshold, const T& low, const T& high);
+
+/**
+ * Threshold the image so that every pixel under or equal to threshold is value
+ */
+template <typename T>
+void cu_ThresholdInv(DevPtr<T> image, const T& threshold, const T& value);
+
+/**
  * Replace every pixel that holds value with another
  */
 template <typename T>

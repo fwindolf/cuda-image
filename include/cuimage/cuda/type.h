@@ -129,6 +129,12 @@ template<> struct is_int_type<int2> : std::true_type {};
 template<> struct is_int_type<int3> : std::true_type {};
 template<> struct is_int_type<int4> : std::true_type {};
 
+template <typename T, typename TO>
+struct is_same_type : std::integral_constant<bool,
+    (is_float_type<T>::value && is_float_type<TO>::value) ||
+    (is_uchar_type<T>::value && is_uchar_type<TO>::value) ||
+    (is_int_type<T>::value   && is_int_type<TO>::value)> {};
+
 /***********************************************************************************
  * Vector type number of channels
  ***********************************************************************************/
@@ -167,6 +173,14 @@ struct has_0_channels : std::false_type {};
 template <> struct has_0_channels<float > : std::true_type {};
 template <> struct has_0_channels<uchar > : std::true_type {};
 template <> struct has_0_channels<int   > : std::true_type {};
+
+template <typename T, typename TO>
+struct has_same_channels : std::integral_constant<bool, 
+    (has_4_channels<T>::value && has_4_channels<TO>::value) ||
+    (has_3_channels<T>::value && has_3_channels<TO>::value) ||
+    (has_2_channels<T>::value && has_2_channels<TO>::value) ||
+    (has_1_channels<T>::value && has_1_channels<TO>::value) ||
+    (has_0_channels<T>::value && has_0_channels<TO>::value)> {};
 
 /***********************************************************************************
  * Conversion between data types

@@ -5,9 +5,28 @@ void Image<T>::setTo(const T& value)
 }
 
 template <typename T>
+template <class Q, typename std::enable_if<!(is_float_type<Q>::value && has_0_channels<Q>::value), Q>::type*>
+void Image<T>::setTo(const float& value)
+{
+    cu_SetTo<T>(*this, make<T>(value));
+}
+
+template <typename T>
 void Image<T>::threshold(const T& threshold, const T& value)
 {
     cu_Threshold<T>(*this, threshold, value);
+}
+
+template <typename T>
+void Image<T>::threshold(const T& threshold, const T& low, const T& high)
+{
+    cu_Threshold<T>(*this, threshold, low, high);
+}
+
+template <typename T>
+void Image<T>::thresholdInv(const T& threshold, const T& value)
+{
+    cu_ThresholdInv<T>(*this, threshold, value);
 }
 
 template <typename T>
