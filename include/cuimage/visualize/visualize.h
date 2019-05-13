@@ -31,9 +31,17 @@ class Visualizer
 public:
     virtual ~Visualizer(){};
     
-    virtual void show(const std::string name, void* data, const size_t dataSize, const bool wait = false) = 0;
+    /**
+     * Show the data in the associated window
+     * If wait is set, the window will stay open until user input. Else an explicit close call is needed.
+     */
+    virtual void show(void* data, const size_t dataSize, const bool wait = true) = 0;
+
+    virtual void close() = 0;
 
     virtual VisType type() const = 0;
+
+    virtual std::string windowName() const = 0;
 
 protected:
     virtual void render_() = 0;
@@ -49,14 +57,20 @@ protected:
 class VisualizerBase : public Visualizer
 {
 public:
-    VisualizerBase(const size_t w, const size_t h);
+    VisualizerBase(const std::string name, const size_t w, const size_t h);
 
-    virtual void show(const std::string name, void* data, const size_t dataSize, const bool wait = false) override;
+    ~VisualizerBase();
+
+    virtual void show(void* data, const size_t dataSize, const bool wait = true) override;
+
+    virtual void close() override;
 
     virtual VisType type() const override;
 
+    virtual std::string windowName() const override;
+
 private:
-    int run(const std::string name, void* data, const size_t dataSize);
+    int run(void* data, const size_t dataSize, const bool wait);
 
 protected:
     template <typename T, typename TO>
@@ -71,10 +85,12 @@ protected:
     virtual bool copyToTexture_(const void* data, cudaArray_t array, const size_t dataSize);
     
     const size_t w_, h_;
+    const std::string name_;
 
     pangolin::GlTextureCudaArray texture_;
 
     std::thread runThread_;
+    std::atomic<bool> running_;
 };
 
 /**
@@ -85,7 +101,7 @@ template <VisType T>
 class TypedVisualizer : public VisualizerBase
 {
 public:
-    TypedVisualizer(const size_t w, const size_t h);
+    TypedVisualizer(const std::string name, const size_t w, const size_t h);
 
     ~TypedVisualizer(){};
 
@@ -141,7 +157,7 @@ template <>
 class TypedVisualizer<DEPTH_TYPE> : public VisualizerBase
 {
 public:
-    TypedVisualizer(const size_t w, const size_t h);
+    TypedVisualizer(const std::string name, const size_t w, const size_t h);
 
     virtual void bindTexture_(void* data, const size_t dataSize) override;
 
@@ -170,8 +186,8 @@ template <>
 class TypedVisualizer<COLOR_TYPE_GREY> : public VisualizerBase
 {
 public:
-    TypedVisualizer(const size_t w, const size_t h)
-     : VisualizerBase(w, h)
+    TypedVisualizer(const std::string name, const size_t w, const size_t h)
+     : VisualizerBase(name, w, h)
     {
     }
 
@@ -190,8 +206,8 @@ template <>
 class TypedVisualizer<COLOR_TYPE_RGB> : public VisualizerBase
 {
 public:
-    TypedVisualizer(const size_t w, const size_t h)
-     : VisualizerBase(w, h)
+    TypedVisualizer(const std::string name, const size_t w, const size_t h)
+     : VisualizerBase(name, w, h)
     {
     }
 
@@ -217,8 +233,8 @@ template <>
 class TypedVisualizer<COLOR_TYPE_RGBA> : public VisualizerBase
 {
 public:
-    TypedVisualizer(const size_t w, const size_t h)
-     : VisualizerBase(w, h)
+    TypedVisualizer(const std::string name, const size_t w, const size_t h)
+     : VisualizerBase(name, w, h)
     {
     }
 private:
@@ -237,8 +253,8 @@ template <>
 class TypedVisualizer<COLOR_TYPE_GREY_F> : public VisualizerBase
 {
 public:
-    TypedVisualizer(const size_t w, const size_t h)
-     : VisualizerBase(w, h)
+    TypedVisualizer(const std::string name, const size_t w, const size_t h)
+     : VisualizerBase(name, w, h)
     {
     }
 
@@ -257,8 +273,8 @@ template <>
 class TypedVisualizer<COLOR_TYPE_RGB_F> : public VisualizerBase
 {
 public:
-    TypedVisualizer(const size_t w, const size_t h)
-     : VisualizerBase(w, h)
+    TypedVisualizer(const std::string name, const size_t w, const size_t h)
+     : VisualizerBase(name, w, h)
     {
     }
 private:
@@ -283,8 +299,8 @@ template <>
 class TypedVisualizer<COLOR_TYPE_RGBA_F> : public VisualizerBase
 {
 public:
-    TypedVisualizer(const size_t w, const size_t h)
-     : VisualizerBase(w, h)
+    TypedVisualizer(const std::string name, const size_t w, const size_t h)
+     : VisualizerBase(name, w, h)
     {
     }
 private:
@@ -300,8 +316,9 @@ private:
  * Base
  */
 
-template<VisType T> TypedVisualizer<T>::TypedVisualizer(const size_t w, const size_t h)
- : VisualizerBase(w, h)
+template<VisType T> 
+TypedVisualizer<T>::TypedVisualizer(const std::string name, const size_t w, const size_t h)
+ : VisualizerBase(name, w, h)
 {
 }
 
@@ -320,8 +337,8 @@ template<VisType T> bool TypedVisualizer<T>::initTexture_(const size_t dataSize)
  * DEPTH_TYPE
  */
 
-inline TypedVisualizer<DEPTH_TYPE>::TypedVisualizer(const size_t w, const size_t h)
- : VisualizerBase(w, h)
+inline TypedVisualizer<DEPTH_TYPE>::TypedVisualizer(const std::string name, const size_t w, const size_t h)
+ : VisualizerBase(name, w, h)
 {
 }
 
@@ -344,7 +361,9 @@ inline void TypedVisualizer<DEPTH_TYPE>::bindTexture_(void* data, const size_t d
     shader_.ClearShaders();
     shader_.AddShader(pangolin::GlSlAnnotatedShader, pangolin::ambient_light_shader);
     //shader_.AddShader(pangolin::GlSlAnnotatedShader, pangolin::default_model_shader);
-    shader_.Link();
+    bool success = shader_.Link();
+    if (!success)
+        throw std::logic_error("Shader 'ambient_light_shader' does not compile!");
 
     // Needs to be initialized in order for the run() method to work
     texture_.Reinitialise(1, 1, GL_RGB, false, 0, GL_RGB, GL_FLOAT);

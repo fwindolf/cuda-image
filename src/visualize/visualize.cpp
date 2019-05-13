@@ -2,33 +2,56 @@
 
 using namespace cuimage;
 
-VisualizerBase::VisualizerBase(const size_t w, const size_t h)
- : w_(w), 
-   h_(h)
+VisualizerBase::VisualizerBase(const std::string name, const size_t w, const size_t h)
+ : name_(name), 
+   w_(w), 
+   h_(h),
+   running_(false)
 {
+    pangolin::CreateWindowAndBind(name, w, h);
+    glEnable(GL_DEPTH_TEST);
+    pangolin::GetBoundWindow()->RemoveCurrent();
 }
 
-void VisualizerBase::show(const std::string name, void* data, const size_t dataSize, const bool wait)
+VisualizerBase::~VisualizerBase()
 {
-    runThread_ = std::thread(&VisualizerBase::run, this, name, data, dataSize);
-
-    if (wait)
+    close();  
+    if (runThread_.joinable())
         runThread_.join();
-    else
-        runThread_.detach();
 }
 
+void VisualizerBase::show(void* data, const size_t dataSize, bool wait)
+{
+    running_ = true;
+    runThread_ = std::thread(&VisualizerBase::run, this, data, dataSize, wait);
+
+    // runThread runs until user input or once if wait is not activated
+    runThread_.join(); 
+    if (wait)
+        close(); // Window must be closed after showing in wait mode
+}
+
+void VisualizerBase::close()
+{
+    pangolin::BindToContext(name_);
+    pangolin::DestroyWindow(name_);
+}
 
 VisType VisualizerBase::type() const
 {
     throw std::runtime_error("Unknown type in base class!");
 }
 
+std::string VisualizerBase::windowName() const
+{
+    return name_;
+}
 
-int VisualizerBase::run(const std::string name, void* data, const size_t dataSize)
+
+int VisualizerBase::run(void* data, const size_t dataSize, const bool wait)
 {
     // Create and setup new window
-    pangolin::CreateWindowAndBind(name, w_, h_);
+    pangolin::BindToContext(name_);
 
     glEnable(GL_DEPTH_TEST);
 
@@ -40,23 +63,22 @@ int VisualizerBase::run(const std::string name, void* data, const size_t dataSiz
     if (!texture_.IsValid())
         throw std::runtime_error("Invalid texture! Bind to texture first!");
 
-    // Show until user destroys window
-    while( !pangolin::ShouldQuit() )
+    // Show until user closes, timer elapses (only if waitMs > 0)
+    do 
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
+
         d_image.Activate();
 
-        glColor3f(1.0,1.0,1.0);
+        glColor3f(1.0, 1.0, 1.0);
 
         render_();
 
         pangolin::FinishFrame();
     }
+    while(wait && !pangolin::ShouldQuit());
 
     pangolin::GetBoundWindow()->RemoveCurrent();
-    
-    pangolin::DestroyWindow(name);
 }
 
 void VisualizerBase::bindTexture_(void* data, const size_t dataSize)

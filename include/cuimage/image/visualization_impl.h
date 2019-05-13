@@ -1,55 +1,54 @@
+template <typename T>
+template <VisType V>
+void Image<T>::createWindow(const std::string windowName)
+{
+    if (vis_)
+        throw std::runtime_error("Cannot create a window for an image when another window is open");
 
+    static_assert(V != VisType::NONE, "Visualization type must be valid!");
+
+    vis_.reset(new TypedVisualizer<V>(windowName, w_, h_));
+}
 
 template <typename T>
-void Image<T>::setVisualizationStrategy(const VisType type)
+void Image<T>::closeWindow()
 {
-    assert(type != VisType::NONE);
-
-    // Skip if strategy doesnt change
-    if (vis_ && visType_ == type)
+    if(!vis_)
         return;
 
-    // Create a new visualizer
-    // TODO: This should be solvable by using constexpr... the type is set by user at compile time
-    switch(type)
-    {
-    case DEPTH_TYPE:
-        vis_.reset(new TypedVisualizer<DEPTH_TYPE>(w_, h_));
-        break;
-    case COLOR_TYPE_GREY:
-        vis_.reset(new TypedVisualizer<COLOR_TYPE_GREY>(w_, h_));
-        break;
-    case COLOR_TYPE_GREY_F:
-        vis_.reset(new TypedVisualizer<COLOR_TYPE_GREY_F>(w_, h_));
-        break;
-    case COLOR_TYPE_RGB:
-        vis_.reset(new TypedVisualizer<COLOR_TYPE_RGB>(w_, h_));
-        break;
-    case COLOR_TYPE_RGB_F:
-        vis_.reset(new TypedVisualizer<COLOR_TYPE_RGB_F>(w_, h_));
-        break;
-    case COLOR_TYPE_RGBA:
-        vis_.reset(new TypedVisualizer<COLOR_TYPE_RGBA>(w_, h_));
-        break;
-    case COLOR_TYPE_RGBA_F:
-        vis_.reset(new TypedVisualizer<COLOR_TYPE_RGBA_F>(w_, h_));
-        break;
-    default:
-        throw std::runtime_error("Invalid type for visualization: " + std::to_string(type));
-    }
-    visType_ = type;
-}
-template <typename T>
-void Image<T>::show(const std::string windowName)
-{
-    return vis_->show(windowName, data_, sizeBytes(), true);
+    vis_->close();
+    vis_.release();
 }
 
 template <typename T>
-void Image<T>::show(const std::string windowName, const VisType type)
+void Image<T>::show(int waitMs) const
 {
-    setVisualizationStrategy(type);
-    show(windowName);
+    if (!vis_)
+        throw std::runtime_error("To show an image without explicitly creating a window, use the templated show method!");
+
+    vis_->show(data_, sizeBytes(), waitMs);
+}
+
+template <typename T>
+template <VisType V>
+void Image<T>::show(const std::string windowName, int waitMs)
+{
+    if (vis_)
+    {
+        if (windowName != vis_->windowName())
+        {
+            assert(vis_->type() == V);
+            vis_->show(data_, sizeBytes(), waitMs);
+        }
+        else
+        {
+            throw std::runtime_error("Cannot show in new window when there is already a created window. Use closeWindow() first!");
+        }
+    }      
+
+    createWindow<V>(windowName);
+    show(waitMs);
+    closeWindow();
 }
 
 template <typename T>

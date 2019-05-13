@@ -111,11 +111,15 @@ public:
     /**
      * Visualization
      */
-    void setVisualizationStrategy(const VisType type);
+    template <VisType V>
+    void createWindow(const std::string windowName);
 
-    void show(const std::string windowName);
+    void closeWindow();
 
-    void show(const std::string windowName, const VisType type);
+    void show(int waitMs = -1) const; // -1: blocks
+
+    template <VisType V>
+    void show(const std::string windowName, int waitMs = -1 ); // -1: blocks
 
     void print() const;
 
@@ -255,7 +259,6 @@ private:
     DevPtr<T> read(const std::string& fileName);
 
     std::unique_ptr<Visualizer> vis_;
-    VisType visType_ = NONE;
 
     T* data_; // contains cuda type data
     size_t w_, h_, c_ = channels<T>();
