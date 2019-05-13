@@ -86,6 +86,8 @@ T cu_Reduce(DevPtr<T> image, Op operation)
     T result;
     cudaSafeCall(cudaMemcpy(&result, odata, sizeof(T), cudaMemcpyDeviceToHost));
 
+    cudaSafeCall(cudaFree(idata));
+    cudaSafeCall(cudaFree(odata));
     return result;
 }
 
