@@ -85,6 +85,12 @@ unsigned int Image<T>::valid() const
 }
 
 template <typename T>
+unsigned int Image<T>::nan() const
+{
+    return size() - valid();
+}
+
+template <typename T>
 unsigned int Image<T>::nonzero() const
 {
     Image<int> cnt(w_, h_, 0);

@@ -154,6 +154,8 @@ public:
     Q median() const;
 
     unsigned int valid() const;
+
+    unsigned int nan() const;
     
     unsigned int nonzero() const;
 
