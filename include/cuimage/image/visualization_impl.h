@@ -8,47 +8,47 @@ void Image<T>::createWindow(const std::string windowName)
     static_assert(V != VisType::NONE, "Visualization type must be valid!");
 
     vis_.reset(new TypedVisualizer<V>(windowName, w_, h_));
+    vis_->create();
 }
 
 template <typename T>
-void Image<T>::closeWindow()
+void Image<T>::closeWindow(bool force)
 {
     if(!vis_)
         return;
 
-    vis_->close();
+    vis_->close(force);
     vis_.release();
 }
 
 template <typename T>
-void Image<T>::show(int waitMs) const
+void Image<T>::show(bool wait) const
 {
     if (!vis_)
         throw std::runtime_error("To show an image without explicitly creating a window, use the templated show method!");
 
-    vis_->show(data_, sizeBytes(), waitMs);
+    vis_->show(data_, sizeBytes(), wait);
 }
 
 template <typename T>
 template <VisType V>
-void Image<T>::show(const std::string windowName, int waitMs)
-{
+void Image<T>::show(const std::string windowName)
+{    
+    // Check or create window
     if (vis_)
     {
-        if (windowName != vis_->windowName())
-        {
-            assert(vis_->type() == V);
-            vis_->show(data_, sizeBytes(), waitMs);
-        }
-        else
-        {
-            throw std::runtime_error("Cannot show in new window when there is already a created window. Use closeWindow() first!");
-        }
+        if (windowName != vis_->windowName() || 
+            V != vis_->type())
+            throw std::runtime_error("Cannot show in new window when there is already a different window. Use closeWindow() first!");
     }      
-
-    createWindow<V>(windowName);
-    show(waitMs);
-    closeWindow();
+    else
+    {
+        createWindow<V>(windowName);
+    }
+    
+    // Visualize blocking, then close window again
+    show(true);
+    closeWindow(true);
 }
 
 template <typename T>

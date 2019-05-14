@@ -17,7 +17,7 @@ int main(int argc, char** argv)
     Image<float> depth(depth_file);
 
     depth.createWindow<DEPTH_TYPE>("Depth");
-    depth.show();
+    depth.show(true); // blocks
 
     std::cout << "Depth image (" << depth.width() << "x" << depth.height() << ")" << std::endl;
 
@@ -31,6 +31,9 @@ int main(int argc, char** argv)
     std::cout << "norm1 = " << depth.norm1() << std::endl;
     std::cout << "norm2 = " << depth.norm2() << std::endl;
 
+    std::cout << "Thresholding Depth image " << std::endl;
+
     depth.threshold(1400, 0);
     depth.show();
+    depth.closeWindow();
 }

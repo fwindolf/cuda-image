@@ -114,12 +114,12 @@ public:
     template <VisType V>
     void createWindow(const std::string windowName);
 
-    void closeWindow();
+    void closeWindow(bool force = false);
 
-    void show(int waitMs = -1) const; // -1: blocks
+    void show(bool wait = false) const;
 
     template <VisType V>
-    void show(const std::string windowName, int waitMs = -1 ); // -1: blocks
+    void show(const std::string windowName);
 
     void print() const;
 
