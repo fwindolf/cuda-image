@@ -37,7 +37,7 @@ void VisualizerBase::initialize()
 
 void VisualizerBase::deinitialize()
 {
-    quit_ = false;
+    // If run thread is waiting for render request, send one but let it exit bc not running
     running_ = false;
     renderRequested_.notify_one();
 
@@ -62,6 +62,9 @@ void VisualizerBase::show(void* data, const size_t dataSize, bool wait)
         return;
     }
 
+    // Quit current render request, and update user interaction
+    quit_ = true;
+    waitUserAction_ = wait;
     // Take context from run thread and upload data
     upload(data, dataSize);
 
@@ -85,11 +88,13 @@ void VisualizerBase::close(bool force)
     if (force)
     {
         // Force quitting by exiting render loop (normally done by user)
-        quit_ = true;
+        running_ = false;
     }
     else
     {
         // Wait for rendering to be complete
+        quit_ = false;
+        waitUserAction_ = true;
         std::unique_lock<std::mutex> lock(completeMutex_);
         while(renderRequestPending_)
             renderComplete_.wait(lock);
@@ -148,17 +153,21 @@ int VisualizerBase::run()
         quit_ = false;
 
         // Wait for the show method to produce a render request        
-        std::unique_lock<std::mutex> lock(renderMutex_);
-        while(running_ && !renderRequestPending_)
-            renderRequested_.wait(lock); // Inside while to counter spurious wakes
-
-        // Exit gracefully if requested
-        if (!running_)
-            return 0;
-        
-
-        while(!quit_)
         {
+            //  Create lock for just this scope
+            std::unique_lock<std::mutex> lock(renderMutex_);
+            while(running_ && !renderRequestPending_)
+                renderRequested_.wait(lock); // Inside while to counter spurious wakes
+        }
+
+        // Run as long as user interaction is required and quit(ESC) is pressed
+        //  or forever, when user action is not required
+        while(!waitUserAction_ || !quit_)
+        {
+            // Exit gracefully if requested
+            if (!running_)
+                return 0;
+    
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             d_image.Activate();

@@ -112,7 +112,9 @@ protected:
     bool contextInitialized_;
     
     std::atomic<bool> running_;
+    
     std::atomic<bool> quit_;
+    std::atomic<bool> waitUserAction_;
 
     std::atomic<bool> renderRequestPending_;
     std::condition_variable renderRequested_;
