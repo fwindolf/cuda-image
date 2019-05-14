@@ -179,8 +179,8 @@ void cu_ResizeLinear(DevPtr<T> output, const DevPtr<T>& input)
 template <typename T>
 void cu_ResizeLinear(DevPtr<T> output, const DevPtr<T>& input, const DevPtr<uchar>& mask)
 {
-    assert(output.width == mask.width);
-    assert(output.height == mask.height);
+    assert(input.width == mask.width);
+    assert(input.height == mask.height);
 
     dim3 block = block2D(32);
     dim3 grid = grid2D(output.width, output.height, block);
