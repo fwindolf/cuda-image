@@ -31,9 +31,12 @@ int main(int argc, char** argv)
     std::cout << "norm1 = " << depth.norm1() << std::endl;
     std::cout << "norm2 = " << depth.norm2() << std::endl;
 
-    std::cout << "Thresholding Depth image " << std::endl;
 
-    depth.threshold(1400, 0);
-    depth.show();
-    depth.closeWindow();
+    for(int i = depth.max(); i > 800; i--)
+    {
+        depth.threshold(i, 0);
+        depth.show();
+    }   
+
+    depth.closeWindow(true);
 }
