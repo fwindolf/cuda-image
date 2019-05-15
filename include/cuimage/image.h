@@ -123,7 +123,7 @@ public:
     void show(bool wait = false) const;
 
     template <VisType V>
-    void show(const std::string windowName);
+    void show(const std::string windowName, bool close = true);
 
     void print() const;
 

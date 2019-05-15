@@ -32,7 +32,7 @@ void Image<T>::show(bool wait) const
 
 template <typename T>
 template <VisType V>
-void Image<T>::show(const std::string windowName)
+void Image<T>::show(const std::string windowName, bool close)
 {    
     // Check or create window
     if (vis_)
@@ -48,7 +48,8 @@ void Image<T>::show(const std::string windowName)
     
     // Visualize blocking, then close window again
     show(true);
-    closeWindow(true);
+    if (close)
+        closeWindow(true);
 }
 
 template <typename T>
