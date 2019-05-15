@@ -115,6 +115,7 @@ __global__ void g_VertexIndicesTriangles(DevPtr<uint> indices, const DevPtr<T> d
     float df[4];
     float minv = 1e37f;
     float maxv = -1e37f;
+    float sum = 0.f;
     for (int i = 0; i < 4; i++)
     {
         df[i] = d_get<T>(d[i], 0); // get 0th component if necessary
@@ -123,11 +124,12 @@ __global__ void g_VertexIndicesTriangles(DevPtr<uint> indices, const DevPtr<T> d
             valid++;
             minv = min(df[i], minv);
             maxv = max(df[i], maxv);
+            sum += df[i];
         }
     }
 
     // Discard triangles that would connect points very far apart
-    if(valid == 4 && maxv - minv >= 10 * df[0])
+    if(maxv - minv >= 0.1f * sum / valid)
         return;
 
     const int w = data.width;
