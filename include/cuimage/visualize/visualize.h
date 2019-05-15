@@ -16,6 +16,7 @@
 #include <cuda_gl_interop.h>
 
 #include "cuimage/cuda.h"
+#include "cuimage/operations/math_cu.h"
 
 #include "types.h"
 #include "shaders/default.h"
@@ -166,6 +167,7 @@ protected:
 #include "visualizers/color_type_impl.h"
 #include "visualizers/depth_type_impl.h"
 #include "visualizers/depth_with_gradients_impl.h"
+#include "visualizers/normals_impl.h"
 
 
 } // image
