@@ -220,6 +220,14 @@ T* Image<T>::data() const
 }
 
 template <typename T>
+T Image<T>::at(const size_t idx) const
+{
+    T out;
+    cudaSafeCall(cudaMemcpy(&out, &data_[idx], sizeof(T), cudaMemcpyDeviceToHost));
+    return out;
+}
+
+template <typename T>
 T Image<T>::at(const size_t x, const size_t y) const
 {
     T out;
@@ -228,8 +236,15 @@ T Image<T>::at(const size_t x, const size_t y) const
 }
 
 template <typename T>
-T* Image<T>::download(const int first_n) const
+T* Image<T>::download() const
 {
+    return download(size());
+}
+
+template <typename T>
+T* Image<T>::download(const size_t first_n) const
+{
+    assert(first_n <= size());
     T* out = new T[first_n];
     cudaSafeCall(cudaMemcpy(out, data_, first_n * sizeof(T), cudaMemcpyDeviceToHost));
     return out;

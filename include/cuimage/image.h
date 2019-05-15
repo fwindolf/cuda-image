@@ -95,9 +95,13 @@ public:
 
     T* data() const;
 
-    T at(size_t x, size_t y) const;
+    T at(const size_t idx) const;
 
-    T* download(int first_n) const;
+    T at(const size_t x, const size_t y) const;
+
+    T* download() const;
+
+    T* download(const size_t first_n) const;
 
     void upload(const T* hdata, const size_t width, const size_t height);
 
