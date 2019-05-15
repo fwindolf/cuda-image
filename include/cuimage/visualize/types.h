@@ -12,6 +12,7 @@ enum VisType
 {
     NONE,
     DEPTH_TYPE,
+    DEPTH_WITH_GRADIENTS_TYPE,
     NORMALS_TYPE,
     MASK_TYPE,
     COLOR_TYPE_GREY,

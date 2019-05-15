@@ -1,8 +1,9 @@
 /**
- * Specialization for DEPTH_TYPE
+ * Specialization for DEPTH_WITH_GRADIENTS_TYPE
  */
+
 template <>
-class TypedVisualizer<DEPTH_TYPE> : public VisualizerBase
+class TypedVisualizer<DEPTH_WITH_GRADIENTS_TYPE> : public VisualizerBase
 {
 public:
     TypedVisualizer(const std::string& name, const size_t w, const size_t h);
@@ -35,15 +36,15 @@ private:
 
 
 /**
- * DEPTH_TYPE
+ * DEPTH_WITH_GRADIENTS_TYPE
  */
 
-inline TypedVisualizer<DEPTH_TYPE>::TypedVisualizer(const std::string& name, const size_t w, const size_t h)
+inline TypedVisualizer<DEPTH_WITH_GRADIENTS_TYPE>::TypedVisualizer(const std::string& name, const size_t w, const size_t h)
  : VisualizerBase(name, w, h)
 {
 }
 
-inline bool TypedVisualizer<DEPTH_TYPE>::initContext_()
+inline bool TypedVisualizer<DEPTH_WITH_GRADIENTS_TYPE>::initContext_()
 {
     // Create 3D view
     s_cam_ = pangolin::OpenGlRenderState(
@@ -68,12 +69,12 @@ inline bool TypedVisualizer<DEPTH_TYPE>::initContext_()
     return success;
 }
 
-inline bool TypedVisualizer<DEPTH_TYPE>::initTexture_()
+inline bool TypedVisualizer<DEPTH_WITH_GRADIENTS_TYPE>::initTexture_()
 {
     if (vertices_.IsValid() && indices_.IsValid())
             return true;
         
-    assert(uploadDataSize_ == w_ * h_ * sizeof(float));
+    assert(uploadDataSize_ == 3 * w_ * h_ * sizeof(float));
     
     vertices_.Reinitialise(pangolin::GlBufferType::GlArrayBuffer,
        2 * w_ * h_, GL_FLOAT, 4, cudaGraphicsMapFlagsWriteDiscard, GL_STATIC_DRAW);
@@ -85,28 +86,28 @@ inline bool TypedVisualizer<DEPTH_TYPE>::initTexture_()
 }
 
 
-inline bool TypedVisualizer<DEPTH_TYPE>::bindToTexture_()
+inline bool TypedVisualizer<DEPTH_WITH_GRADIENTS_TYPE>::bindToTexture_()
 {
     return true;
 }
 
 
-inline bool TypedVisualizer<DEPTH_TYPE>::copyToTexture_()
+inline bool TypedVisualizer<DEPTH_WITH_GRADIENTS_TYPE>::copyToTexture_()
 {
     pangolin::CudaScopedMappedPtr vertex_array(vertices_);
-    DevPtr<float> data((float*)uploadData_, w_, h_);
+    DevPtr<float3> data((float3*)uploadData_, w_, h_);
     DevPtr<float4> verts((float4*)*vertex_array, w_, 2 * h_);
-    cu_VerticesFromDepth(verts, data, fx_, fy_, cx_, cy_);
+    cu_VerticesFromDepthGradients(data, verts, fx_, fy_, cx_, cy_);
 
     // Generate the indices of connected triangles to the right[0 1 0+w], and to the left [1 1+w 1+w-1] to connect all points
     pangolin::CudaScopedMappedPtr index_array(indices_);
     DevPtr<unsigned int> inds((unsigned int*)*index_array, w_, 6 * h_);
-    cu_VertexIndices<float>(inds, data);
+    cu_VertexIndices<float3>(data, inds);
 
     return true;
 }
 
-inline void TypedVisualizer<DEPTH_TYPE>::render_()
+inline void TypedVisualizer<DEPTH_WITH_GRADIENTS_TYPE>::render_()
 {
     // Render triangles for every 
     d_cam_.Activate(s_cam_);
