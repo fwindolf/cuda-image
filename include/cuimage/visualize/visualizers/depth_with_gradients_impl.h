@@ -19,8 +19,9 @@ public:
     virtual void render_() override;
 
 private:    
-    float fx_ = 1320.f;
-    float fy_ = 1320.f;
+    float factor_ = (1280 / w_);
+    float fx_ = 1320.f / factor_;
+    float fy_ = 1320.f / factor_;
     float cx_ = w_/2.f;
     float cy_ = h_/2.f;
 
