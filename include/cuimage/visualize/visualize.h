@@ -165,6 +165,7 @@ protected:
 #include "visualizers/copy_impl.h"
 #include "visualizers/color_type_impl.h"
 #include "visualizers/depth_type_impl.h"
+#include "visualizers/depth_with_gradients_impl.h"
 
 
 } // image

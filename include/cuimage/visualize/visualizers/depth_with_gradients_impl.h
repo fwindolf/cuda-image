@@ -97,12 +97,12 @@ inline bool TypedVisualizer<DEPTH_WITH_GRADIENTS_TYPE>::copyToTexture_()
     pangolin::CudaScopedMappedPtr vertex_array(vertices_);
     DevPtr<float3> data((float3*)uploadData_, w_, h_);
     DevPtr<float4> verts((float4*)*vertex_array, w_, 2 * h_);
-    cu_VerticesFromDepthGradients(data, verts, fx_, fy_, cx_, cy_);
+    cu_VerticesFromDepthGradients(verts, data, fx_, fy_, cx_, cy_);
 
     // Generate the indices of connected triangles to the right[0 1 0+w], and to the left [1 1+w 1+w-1] to connect all points
     pangolin::CudaScopedMappedPtr index_array(indices_);
     DevPtr<unsigned int> inds((unsigned int*)*index_array, w_, 6 * h_);
-    cu_VertexIndices<float3>(data, inds);
+    cu_VertexIndices<float3>(inds, data);
 
     return true;
 }

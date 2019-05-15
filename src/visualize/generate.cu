@@ -63,7 +63,7 @@ struct Triangle
     uint c1 = 0, c2 = 0, c3 = 0;
 };
 
-// Filling left upper corner
+// ◤ Filling left upper corner (corner 3 of quad is missing)
 __device__ void d_generate_triangle_1(Triangle& t, const uint idx, const int w)
 {
     t.c3 = idx;
@@ -71,7 +71,7 @@ __device__ void d_generate_triangle_1(Triangle& t, const uint idx, const int w)
     t.c1 = idx + w;
 }
 
-// Filling right upper corner
+// ◥ Filling right upper corner (corner 4 of quad is missing)
 __device__ void  d_generate_triangle_2(Triangle& t, const uint idx, const int w)
 {
     t.c3 = idx;
@@ -79,7 +79,7 @@ __device__ void  d_generate_triangle_2(Triangle& t, const uint idx, const int w)
     t.c1 = idx + w + 1;
 }
 
-// Filling right lower corner
+// ◢ Filling right lower corner (corner 1 of quad is missing)
 __device__ void  d_generate_triangle_3(Triangle& t, const uint idx, const int w)
 {
     t.c3 = idx;
@@ -87,7 +87,7 @@ __device__ void  d_generate_triangle_3(Triangle& t, const uint idx, const int w)
     t.c1 = idx + w;
 }
 
-// Filling left lower corner
+// ◣ Filling left lower corner (corner 2 of quad is missing)
 __device__ void  d_generate_triangle_4(Triangle& t, const uint idx, const int w)
 {
     t.c3 = idx + 1;
