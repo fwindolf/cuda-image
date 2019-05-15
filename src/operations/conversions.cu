@@ -89,6 +89,20 @@ __global__ void g_Convert(DevPtr<TO> output, const DevPtr<T> input)
     output(pos.x, pos.y) = as<TO>(input(pos.x, pos.y));
 }
 
+
+template <typename T, typename TO>
+__global__ void g_GetComponent(DevPtr<TO> output, const DevPtr<T> input, const ushort component)
+{
+    const dim3 pos = getPos(blockIdx, blockDim, threadIdx);
+
+    if(pos.x >= output.width || pos.y >= output.height)
+        return;
+
+    const T val = input(pos.x, pos.y);
+    output(pos.x, pos.y) = d_get<TO>(val, component);
+}
+
+
 template <typename T, typename TO>
 void cu_GrayToColor(DevPtr<TO> output, const DevPtr<T>& input)
 {
@@ -147,6 +161,21 @@ void cu_Convert(DevPtr<TO> output, const DevPtr<T>& input)
         
     cudaCheckLastCall();
     cudaSafeCall(cudaDeviceSynchronize());    
+}
+
+template <typename T, typename TO>
+void cu_GetComponent(DevPtr<TO> output, const DevPtr<T>& input, const ushort component)
+{
+    assert(output.width == input.width);
+    assert(output.height == input.height);
+
+    dim3 block = block2D(32);
+    dim3 grid = grid2D(output.width, output.height, block);
+
+    g_GetComponent<T, TO> <<< grid, block >>>(output, input, component);
+         
+    cudaCheckLastCall();
+    cudaSafeCall(cudaDeviceSynchronize());        
 }
 
 /**
@@ -223,6 +252,16 @@ FOR_EACH_3CHANNEL_TYPE(INST_CONVERSION_FUNCTION, int4  , cu_ColorToColor)
 FOR_EACH_4CHANNEL_TYPE(INST_CONVERSION_FUNCTION, float3, cu_ColorToColor)
 FOR_EACH_4CHANNEL_TYPE(INST_CONVERSION_FUNCTION, uchar3, cu_ColorToColor)
 FOR_EACH_4CHANNEL_TYPE(INST_CONVERSION_FUNCTION, int3  , cu_ColorToColor)
+
+
+// Get single component
+#undef INST_CONVERSION_FUNCTION
+#define INST_CONVERSION_FUNCTION(type, typeO, function) \
+    template void function(DevPtr<typeO>, const DevPtr<type>&, const ushort);
+
+FOR_EACH_FLOAT_TYPE(INST_CONVERSION_FUNCTION, float, cu_GetComponent);
+FOR_EACH_UCHAR_TYPE(INST_CONVERSION_FUNCTION, uchar, cu_GetComponent);
+FOR_EACH_INT_TYPE(INST_CONVERSION_FUNCTION, int, cu_GetComponent);
 
 
 } // image

@@ -63,6 +63,19 @@ Image<TO> Image<T>::as() const
 }
 
 template<typename T>
+template<typename TO, typename std::enable_if<is_same_type<T, TO>::value && has_0_channels<TO>::value, TO>::type*>
+Image<TO> Image<T>::get(const ushort component) const
+{
+    assert(component < channels<T>());
+
+    Image<TO> output(nullptr, w_, h_);
+    cu_GetComponent<T, TO>(output, *this, component);
+    return output;
+}
+
+
+
+template<typename T>
 Image<T> Image<T>::resize(const size_t width, const size_t height) const
 {
     // Allocates, but doesnt set initial value

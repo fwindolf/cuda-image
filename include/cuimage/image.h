@@ -182,6 +182,10 @@ public:
     template<typename TO>
     Image<TO> as() const;
 
+    // Only possible for base type
+    template<typename TO, typename std::enable_if<is_same_type<T, TO>::value && has_0_channels<TO>::value, TO>::type* = nullptr>
+    Image<TO> get(const ushort component) const;
+
     /**
      * Resizing
      */

@@ -671,4 +671,188 @@ template<> inline __device__ int3 rgba2rgb(const int4 v)
 }
 
 
+/**
+ * Get a channel of a multi-channel variable
+ */
+
+template <typename T, typename std::enable_if<is_float_type<T>::value, T>::type* = nullptr>
+__device__ float d_get(const T& val, const ushort component);
+
+template <typename T>
+__device__ float d_get(const float4& val, const ushort component)
+{
+    assert(component < 4);
+    switch(component)
+    {
+        case 0: return val.x;
+        case 1: return val.y;
+        case 2: return val.z;
+        case 3: return val.w;
+        default: return std::nanf("");
+    }
+}
+
+template <typename T>
+__device__ float d_get(const float3& val, const ushort component)
+{
+    assert(component < 3);
+    switch(component)
+    {
+        case 0: return val.x;
+        case 1: return val.y;
+        case 2: return val.z;
+        default: return std::nanf("");
+    }
+}
+
+template <typename T>
+__device__ float d_get(const float2& val, const ushort component)
+{
+    assert(component < 2);
+    switch(component)
+    {
+        case 0: return val.x;
+        case 1: return val.y;
+        default: return std::nanf("");
+    }
+}
+
+template <typename T>
+__device__ float d_get(const float1& val, const ushort component)
+{
+    assert(component < 1);
+    return val.x;
+}
+
+template <typename T>
+__device__ float d_get(const float& val, const ushort component)
+{
+    assert(component == 0);
+    return val;
+}
+
+template <typename T, typename std::enable_if<is_uchar_type<T>::value, T>::type* = nullptr>
+__device__ uchar d_get(const T& val, const ushort component);
+
+template <typename T>
+__device__ uchar d_get(const uchar4& val, const ushort component)
+{
+    assert(component < 4);
+    switch(component)
+    {
+        case 0: return val.x;
+        case 1: return val.y;
+        case 2: return val.z;
+        case 3: return val.w;
+        default: return 0;
+    }
+}
+
+template <typename T>
+__device__ uchar d_get(const uchar3& val, const ushort component)
+
+{
+    assert(component < 3);
+    switch(component)
+    {
+        case 0: return val.x;
+        case 1: return val.y;
+        case 2: return val.z;
+        default: return 0;
+    }
+}
+
+template <typename T>
+__device__ uchar d_get(const uchar2& val, const ushort component)
+
+{
+    assert(component < 2);
+    switch(component)
+    {
+        case 0: return val.x;
+        case 1: return val.y;
+        default: return 0;
+    }
+}
+
+template <typename T>
+__device__ uchar d_get(const uchar1& val, const ushort component)
+{
+    assert(component < 1);
+    switch(component)
+    {
+        case 0: return val.x;
+        default: return std::nanf("");
+    }
+}
+
+template <typename T>
+__device__ uchar d_get(const uchar& val, const ushort component)
+{
+    assert(component == 0);
+    return val;
+}
+
+template <typename T, typename std::enable_if<is_int_type<T>::value, T>::type* = nullptr>
+__device__ int d_get(const T& val, const ushort component);
+
+template <typename T>
+__device__ int d_get(const int4& val, const ushort component)
+{
+    assert(component < 4);
+    switch(component)
+    {
+        case 0: return val.x;
+        case 1: return val.y;
+        case 2: return val.z;
+        case 3: return val.w;
+        default: return -INT_MAX;
+    }
+}
+
+template <typename T>
+__device__ int d_get(const int3& val, const ushort component)
+{
+    assert(component < 3);
+    switch(component)
+    {
+        case 0: return val.x;
+        case 1: return val.y;
+        case 2: return val.z;
+        default: return -INT_MAX;
+    }
+}
+
+template <typename T>
+__device__ int d_get(const int2& val, const ushort component)
+{
+    assert(component < 2);
+    switch(component)
+    {
+        case 0: return val.x;
+        case 1: return val.y;
+        default: return -INT_MAX;
+    }
+}
+
+template <typename T>
+__device__ int d_get(const int1& val, const ushort component)
+{
+    assert(component < 1);
+    switch(component)
+    {
+        case 0: return val.x;
+        default: return -INT_MAX;
+    }
+}
+
+template <typename T>
+__device__ int d_get(const int& val, const ushort component)
+{
+    assert(component == 0);
+    return val;
+}
+
+
+
 } // image

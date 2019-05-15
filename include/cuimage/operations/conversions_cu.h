@@ -23,6 +23,7 @@ void cu_ColorToColor(DevPtr<TO> output, const DevPtr<T>& input);
 template <typename T, typename TO>
 void cu_Convert(DevPtr<TO> output, const DevPtr<T>& input);
 
-
+template <typename T, typename TO>
+void cu_GetComponent(DevPtr<TO> output, const DevPtr<T>& input, const ushort component);
 
 } // image
