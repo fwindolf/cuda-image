@@ -688,7 +688,7 @@ __device__ float d_get(const float4& val, const ushort component)
         case 1: return val.y;
         case 2: return val.z;
         case 3: return val.w;
-        default: return std::nanf("");
+        default: return 0.f;
     }
 }
 
@@ -701,7 +701,7 @@ __device__ float d_get(const float3& val, const ushort component)
         case 0: return val.x;
         case 1: return val.y;
         case 2: return val.z;
-        default: return std::nanf("");
+        default: return 0.f;
     }
 }
 
@@ -713,7 +713,7 @@ __device__ float d_get(const float2& val, const ushort component)
     {
         case 0: return val.x;
         case 1: return val.y;
-        default: return std::nanf("");
+        default: return 0.f;
     }
 }
 
@@ -782,7 +782,7 @@ __device__ uchar d_get(const uchar1& val, const ushort component)
     switch(component)
     {
         case 0: return val.x;
-        default: return std::nanf("");
+        default: return 0.f;
     }
 }
 
@@ -806,7 +806,7 @@ __device__ int d_get(const int4& val, const ushort component)
         case 1: return val.y;
         case 2: return val.z;
         case 3: return val.w;
-        default: return -INT_MAX;
+        default: return 0;
     }
 }
 
@@ -819,7 +819,7 @@ __device__ int d_get(const int3& val, const ushort component)
         case 0: return val.x;
         case 1: return val.y;
         case 2: return val.z;
-        default: return -INT_MAX;
+        default: return 0;
     }
 }
 
@@ -831,7 +831,7 @@ __device__ int d_get(const int2& val, const ushort component)
     {
         case 0: return val.x;
         case 1: return val.y;
-        default: return -INT_MAX;
+        default: return 0;
     }
 }
 
@@ -842,7 +842,7 @@ __device__ int d_get(const int1& val, const ushort component)
     switch(component)
     {
         case 0: return val.x;
-        default: return -INT_MAX;
+        default: return 0;
     }
 }
 
