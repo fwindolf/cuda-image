@@ -39,6 +39,9 @@ struct SquareNormOp
     {
         return [*this] __device__ (const T& v) -> Q
         {       
+            if (!isvalid(v))  
+                return make<Q>(0.f);
+                
             return static_cast<Q>(sum(v * v));
         };
     }
@@ -57,7 +60,10 @@ struct PixelSumOp
     nvstd::function<Q(const T&)> __device__ getOp()
     {
         return [*this] __device__ (const T& v) -> Q
-        {       
+        {     
+            if (!isvalid(v))  
+                return make<Q>(0.f);
+
             return static_cast<Q>(sum(v));
         };
     }

@@ -98,7 +98,8 @@ struct MinOp
     {
         return [] __device__ (T& l, T& r)
         {
-            l = min(l, r);
+            if (isvalid(r))
+                l = min(l, r);
         };
     }
 
@@ -124,7 +125,8 @@ struct MaxOp
     {
         return [] __device__ (T& l, T& r)
         {
-            l = max(l, r);
+            if (isvalid(r))
+                l = max(l, r);
         };
     }
 
@@ -150,7 +152,8 @@ struct SumOp
     {
         return [] __device__ (T& l, T& r)
         {
-            l += r;
+            if (isvalid(r))
+                l += r;
         };
     }
 
@@ -233,7 +236,8 @@ struct AbsOp
     {
         return [] __device__ (T& l, T& r)
         {
-            l += abs(r);
+            if (isvalid(r))
+                l += abs(r);
         };
     }
     

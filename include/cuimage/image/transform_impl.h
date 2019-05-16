@@ -65,7 +65,7 @@ float Image<T>::mean() const
     // First sum all pixel components and then add.
     Image<float> sum(w_, h_, 0.f);
     cu_PixelSum<T, float>(sum, *this);
-    return cu_Sum<float>(sum) / (channels<T>() * size()); // Sum of all components divided by number of components
+    return cu_Sum<float>(sum) / (channels<T>() * valid()); // Sum of all components divided by number of components
 }
 
 template <typename T>
