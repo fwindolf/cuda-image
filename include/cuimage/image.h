@@ -59,7 +59,10 @@ public:
 
     Image(const std::string& fileName);
 
-    Image(size_t w, size_t h, const T initVal = make<T>(0.f));
+    Image(size_t w, size_t h, const T& initVal);
+
+    template<class Q = T, typename std::enable_if<!(is_float_type<Q>::value && has_0_channels<Q>::value), Q>::type* = nullptr>
+    Image(size_t w, size_t h, const float initVal = 0.f);
 
     ~Image();
 

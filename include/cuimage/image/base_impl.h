@@ -37,7 +37,15 @@ Image<T>::Image(T* data, size_t w, size_t h)
 }
 
 template <typename T>
-Image<T>::Image(size_t w, size_t h, const T initVal)
+Image<T>::Image(size_t w, size_t h, const T& initVal)
+    : Image(nullptr, w, h)
+{
+    setTo(initVal);
+}
+
+template <typename T>
+template <class Q, typename std::enable_if<!(is_float_type<Q>::value && has_0_channels<Q>::value), Q>::type*>
+Image<T>::Image(size_t w, size_t h, const float initVal)
     : Image(nullptr, w, h)
 {
     setTo(initVal);
