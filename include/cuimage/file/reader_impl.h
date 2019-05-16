@@ -66,8 +66,6 @@ DevPtr<float> convertPng(const DevPtr<uchar4>& input)
     
 }
 
-
-
 DevPtr<TO> readPng(const std::string fileName)
 {
     assert(type(fileName) == "PNG");
@@ -81,27 +79,6 @@ DevPtr<TO> readPng(const std::string fileName)
     devptr.free();
     return output;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 template<typename TO, typename std::enable_if<is_float_type<TO>::value, TO>::type* = nullptr>
 DevPtr<TO> FileReader::read(const std::string fileName, size_t& width, size_t& height, size_t& c) const
@@ -231,54 +208,6 @@ DevPtr<TO> convertDevPtr(const DevPtr<T>& input)
     cu_ColorToColor<T, TO>(output, input);
         return output;
 }
-
-
-#if 0
-
-template <typename T, typename TO, typename
-    std::enable_if<!is_same_type<T, TO>::value && !has_same_channels<T, TO>::value, T>::type* = nullptr>
-DevPtr<TO> convertDevPtr(const DevPtr<T>& input);
-
-/**
- * Specialization for common types: uchar3 to float
- */
-template <>
-DevPtr<float> convertDevPtr(const DevPtr<uchar3>& input)
-{
-    DevPtr<float3> tmp = convertDevPtr<uchar3, float3>(input);
-    DevPtr<float> output = convertDevPtr<float3, float>(tmp);
-    
-    tmp.free(); // Free the data that does not get wrapped by image
-    return output;
-}
-
-/**
- * Specialization for common types: uchar4 to float3
- */
-template <>
-DevPtr<float3> convertDevPtr(const DevPtr<uchar4>& input)
-{
-    DevPtr<float4> tmp = convertDevPtr<uchar4, float4>(input);
-    DevPtr<float3> output = convertDevPtr<float4, float3>(tmp);
-        
-    tmp.free(); // Free the data that does not get wrapped by image
-    return output;
-}
-
-/**
- * Specialization for common types: float to uchar3
- */
-template <>
-DevPtr<uchar3> convertDevPtr(const DevPtr<float>& input)
-{
-    DevPtr<float3> tmp = convertDevPtr<float, float3>(input);
-    DevPtr<uchar3> output = convertDevPtr<float3, uchar3>(tmp);
-
-    tmp.free();// Free the data that does not get wrapped by image
-    return output;
-}
-
-#endif
 
 template <typename T, typename TO>
 DevPtr<TO> FileReader::convert(const DevPtr<T>& input) const

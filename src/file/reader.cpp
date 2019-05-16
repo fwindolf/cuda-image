@@ -29,10 +29,9 @@ DevPtr<uchar4> FileReader::readPng(const std::string fileName)
 {
     assert(type(fileName) == "PNG");
 
-    size_t w, h, c;
-    std::vector<uchar> image = readPng(fileName, w, h, c);       
-    assert(c == 4);
-    return upload<uchar, uchar4>(image.data(), w, h, c);
+    size_t w, h;
+    auto image = readPng(fileName, w, h, 4, 8);
+    return upload<uchar, uchar4>(image.data(), w, h, 4);
 }
 
 /**
@@ -42,17 +41,21 @@ DevPtr<float3> FileReader::readPngF(const std::string fileName)
 {
     assert(type(fileName) == "PNG");
 
-    size_t w, h, c;
-    std::vector<uchar> image = readPng(fileName, w, h, c);       
-    assert(c == 4);
-    DevPtr<uchar4> tmp = upload<uchar, uchar4>(image.data(), w, h, c);
-    DevPtr<float4> tmpf(w, h);
-    cu_Convert<uchar4, float4>(tmpf, tmp);
-    DevPtr<float3> output(w, h);
-    cu_ColorToColor<float4, float3>(output, tmpf);
-    tmp.free();
-    tmpf.free();
-    return output;
+    size_t w, h;
+    auto raw = readPng(fileName, w, h, 3, 16);
+
+    // 16 bit per pixel in big endian -> reorder
+    std::vector<float> image(w * h * 3);
+    uchar components[2];
+    for (int i = 0; i < w * h * 3; i++)
+    {
+        // Make little endian
+        components[0] = raw[2 * i + 1];
+        components[1] = raw[2 * i + 0];
+        image[i] = (float) *(unsigned int*) components;
+    }
+
+    return upload<float, float3>(image.data(), w, h, 3);
 }
 
 /**
@@ -62,11 +65,8 @@ DevPtr<uchar> FileReader::readPngGrey(const std::string fileName)
 {
     assert(type(fileName) == "PNG");
 
-    size_t w, h, c;
-    std::vector<uchar> image = readPng(fileName, w, h, c);
-    assert(c == 4);
-    DevPtr<uchar4> tmp = upload<uchar, uchar4>(image.data(), w, h, c);
-    DevPtr<uchar> output(w, h);
+    DevPtr<uchar4> tmp = readPng(fileName);
+    DevPtr<uchar> output(tmp.width, tmp.height);
     cu_ColorToGray<uchar4, uchar>(output, tmp);
     tmp.free();
     return output;
@@ -79,17 +79,21 @@ DevPtr<float> FileReader::readPngGreyF(const std::string fileName)
 {
     assert(type(fileName) == "PNG");
 
-    size_t w, h, c;
-    std::vector<uchar> image = readPng(fileName, w, h, c);       
-    assert(c == 4);
-    DevPtr<uchar4> tmp = upload<uchar, uchar4>(image.data(), w, h, c);
-    DevPtr<float4> tmpf(w, h);
-    cu_Convert<uchar4, float4>(tmpf, tmp);
-    DevPtr<float> output(w, h);
-    cu_ColorToGray<float4, float>(output, tmpf);
-    tmp.free();
-    tmpf.free();
-    return output;
+    size_t w, h;
+    auto raw = readPng(fileName, w, h, 1, 16);
+
+    // 16 bit per pixel in big endian -> reorder
+    std::vector<float> image(w * h);
+    uchar components[2];
+    for (int i = 0; i < w * h; i++)
+    {
+        // Make little endian
+        components[0] = raw[2 * i + 1];
+        components[1] = raw[2 * i + 0];
+        image[i] = (float) *(unsigned int*) components;
+    }
+
+    return upload<float, float>(image.data(), w, h, 1);
 }
 
 
@@ -223,50 +227,26 @@ std::vector<float> FileReader::readExr(const std::string fileName, size_t& width
 }
 
 
-std::vector<unsigned char> FileReader::readPng(const std::string fileName, size_t& width, size_t& height, size_t& channels) const
+std::vector<unsigned char> FileReader::readPng(const std::string fileName, size_t& width, size_t& height, size_t channels, unsigned bitdepth) const
 {
-#if HAVE_OPENCV
-    std::vector<unsigned char> image; // Raw pixels
+    std::vector<unsigned char> image; // the raw pixels
 
-    auto m = cv::imread(fileName);
-    assert(!m.empty());
-
-    // To Uchar
-    if (m.depth() != CV_8U)
-        m.convertTo(m, CV_8U);
+    LodePNGColorType type;
     
-    width = m.cols;
-    height = m.rows;
-    channels = m.channels();
-    
-    if (channels >= 3)
-    {   
-        std::vector<cv::Mat> vec;
-        cv::split(m, vec);
+    if (channels == 1) 
+        type = LCT_GREY;
+    else if (channels == 3) 
+        type = LCT_RGB;
+    else if (channels = 4)
+        type = LCT_RGBA;
 
-        // BGR -> RGB        
-        std::swap(vec[0], vec[2]); 
-
-        cv::merge(vec, m);
-    }    
-    image.assign(m.data, m.data + width * height * channels);
-    
-    return image;    
-#else
-    std::vector<unsigned char> image; //the raw pixels
     unsigned w, h;
-    
-    unsigned error = lodepng::decode(image, w, h, fileName);
-    if (error)
-    {
+
+    auto error = lodepng::decode(image, w, h, fileName, type, bitdepth);
+    if(error)
         std::cerr << "Could not load " << fileName << ": " << lodepng_error_text(error) << std::endl;
-        return image;
-    }
 
     width = w;
     height = h;
-    channels = image.size() / (w * h);
-
     return image;
-#endif
 }

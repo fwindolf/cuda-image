@@ -36,6 +36,7 @@ public:
      * Read PNG as color
      */
     DevPtr<uchar4> readPng(const std::string fileName);
+
     /**
      * Read PNG as color
      */
@@ -68,7 +69,7 @@ private:
 
     std::vector<float> readExr(const std::string fileName, size_t& width, size_t& height, size_t& channels) const;
 
-    std::vector<unsigned char> readPng(const std::string fileName, size_t& width, size_t& height, size_t& channels) const;
+    std::vector<unsigned char> readPng(const std::string fileName, size_t& width, size_t& height, size_t channels, unsigned bitdepth) const;
 };
 
 

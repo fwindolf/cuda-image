@@ -13,6 +13,10 @@ int main(int argc, char** argv)
     cudaSafeCall(cudaSetDevice(0));
     cudaFree(0);
 
+    std::string depth_png = std::string(SOURCE_DIR) + "/examples/data/depth.png";
+    Image<float> depthlr(depth_png);
+    depthlr.show<DEPTH_TYPE>("Depth LR");
+
     std::string depth_file = std::string(SOURCE_DIR) + "/examples/data/depth.exr";
     Image<float> depth(depth_file);
 
