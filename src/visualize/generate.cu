@@ -102,7 +102,7 @@ __global__ void g_VertexIndicesTriangles(DevPtr<uint> indices, const DevPtr<T> d
     const dim3 pos = getPos(blockIdx, blockDim, threadIdx);
     const int idx = getIndex(pos, data.width, data.height);
 
-    if (pos.x >= data.width || pos.y >= data.height)
+    if (pos.x >= data.width - 1 || pos.y >= data.height - 1)
         return;
 
     T d[4];
