@@ -177,6 +177,9 @@ int VisualizerBase::run()
             // Defer rendering until new data was uploaded
             if (uploadPending_)
             {
+                assert(uploadData_);
+                assert(uploadDataSize_);
+                
                 // (Re-)Init texture
                 uploadMutex_.lock();
                 if (!initTexture_())
@@ -198,6 +201,8 @@ int VisualizerBase::run()
                     break;
                 } 
 
+                uploadData_ = nullptr;
+                uploadDataSize_ = 0;
                 uploadPending_ = false;
                 uploadMutex_.unlock();
             }
