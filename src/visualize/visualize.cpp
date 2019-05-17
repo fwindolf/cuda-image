@@ -185,12 +185,16 @@ int VisualizerBase::run()
                 if (!initTexture_())
                 {
                     std::cerr << "Could not initialize GlTexture!" << std::endl;
+                    uploadPending_ = false;
+                    uploadMutex_.unlock();
                     break;
                 }
 
                 if (!bindToTexture_())
                 {
                     std::cerr << "Could not bind to Texture!" << std::endl;
+                    uploadPending_ = false;
+                    uploadMutex_.unlock();
                     break;
                 }
 
@@ -198,6 +202,8 @@ int VisualizerBase::run()
                 if (!copyToTexture_())
                 {
                     std::cerr << "Could not copy to Texture!" << std::endl;
+                    uploadPending_ = false;
+                    uploadMutex_.unlock();
                     break;
                 } 
 
