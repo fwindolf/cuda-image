@@ -52,7 +52,8 @@ DevPtr<float3> FileReader::readPngF(const std::string fileName)
         // Make little endian
         components[0] = raw[2 * i + 1];
         components[1] = raw[2 * i + 0];
-        image[i] = (float) *(unsigned int*) components;
+        unsigned short val = *((unsigned short*) components);
+        image[i] = static_cast<float>(val) / (255.f * 255.f);
     }
 
     return upload<float, float3>(image.data(), w, h, 3);
@@ -90,7 +91,8 @@ DevPtr<float> FileReader::readPngGreyF(const std::string fileName)
         // Make little endian
         components[0] = raw[2 * i + 1];
         components[1] = raw[2 * i + 0];
-        image[i] = (float) *(unsigned int*) components;
+        unsigned short val = *((unsigned short*) components);
+        image[i] = static_cast<float>(val) / (255.f * 255.f);
     }
 
     return upload<float, float>(image.data(), w, h, 1);
