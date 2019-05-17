@@ -13,9 +13,9 @@ dim3 block2D(const int blockSizeX, const int blockSizeY);
 
 dim3 block3D(const int blockSize, const size_t channels);
 
-dim3 grid2D(const size_t width, const size_t height, const dim3 block);
+dim3 grid2D(const size_t width, const size_t height, dim3& block);
 
-dim3 grid3D(const size_t width, const size_t height, const size_t channels, const dim3 block);
+dim3 grid3D(const size_t width, const size_t height, const size_t channels, dim3& block);
 
 /**
  * Device indexing helpers
