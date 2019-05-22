@@ -42,6 +42,12 @@ void Image<T>::replaceNan(const T& value)
 }
 
 template <typename T>
+void Image<T>::abs()
+{
+    cu_Abs<T>(*this);
+}
+
+template <typename T>
 T Image<T>::min() const
 {
     return cu_Min<T>(*this);

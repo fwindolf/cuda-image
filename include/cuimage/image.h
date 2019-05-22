@@ -148,6 +148,7 @@ public:
 
     void replaceNan(const T& value);
 
+    void abs();
         
     /** 
      * Reductions

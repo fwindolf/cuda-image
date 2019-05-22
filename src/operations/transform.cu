@@ -196,6 +196,27 @@ void cu_Threshold(DevPtr<T> image, const T& threshold, const T& low, const T& hi
     cu_Transform(image, thres_op);
 }
 
+template <typename T>
+struct Absolute
+{
+    // Return a function ptr from lambda that sets the pixel to value
+    nvstd::function<void(T&)> __device__ getOp()
+    {
+        return [*this] __device__ (T& v) 
+        {
+            v = abs(v);
+        };
+    }
+};
+
+
+template <typename T>
+void cu_Abs(DevPtr<T> image)
+{
+    Absolute<T> abs_op;
+    cu_Transform(image, abs_op);
+}
+
 template <typename T, typename std::enable_if<has_0_channels<T>::value, T>::type* = nullptr>
 struct MedianOp
 {
@@ -267,28 +288,36 @@ T cu_Median(DevPtr<T> image)
 #define DECLARE_TRANSFORM_FUNCTION(type, operation) \
     template void cu_Transform(DevPtr<type>&, operation<type>);
 
-#define DECLARE_SET_FUNCTION(type, name) \
-    template void name(DevPtr<type>, const type&);
-
-#define DECLARE_REPLACE_FUNCTION(type, name) \
-    template void name(DevPtr<type>, const type&, const type&);
-
-#define DECLARE_THRESHOLD_FUNCTION(type, name) \
-    template void name(DevPtr<type>, const type&, const type&, const type&);
-
 FOR_EACH_TYPE(DECLARE_TRANSFORM_FUNCTION, SetValue)
 FOR_EACH_TYPE(DECLARE_TRANSFORM_FUNCTION, ReplaceValue)
 FOR_EACH_TYPE(DECLARE_TRANSFORM_FUNCTION, ReplaceNan)
 FOR_EACH_TYPE(DECLARE_TRANSFORM_FUNCTION, Threshold)
 FOR_EACH_TYPE(DECLARE_TRANSFORM_FUNCTION, ThresholdInv)
 FOR_EACH_TYPE(DECLARE_TRANSFORM_FUNCTION, ThresholdLowHigh)
+FOR_EACH_TYPE(DECLARE_TRANSFORM_FUNCTION, Absolute)
+
+#define DECLARE_SET_FUNCTION(type, name) \
+    template void name(DevPtr<type>, const type&);
 
 FOR_EACH_TYPE(DECLARE_SET_FUNCTION, cu_SetTo)
 FOR_EACH_TYPE(DECLARE_SET_FUNCTION, cu_ReplaceNan)
+
+#define DECLARE_REPLACE_FUNCTION(type, name) \
+    template void name(DevPtr<type>, const type&, const type&);
+
 FOR_EACH_TYPE(DECLARE_REPLACE_FUNCTION, cu_Replace)
 FOR_EACH_TYPE(DECLARE_REPLACE_FUNCTION, cu_Threshold)
 FOR_EACH_TYPE(DECLARE_REPLACE_FUNCTION, cu_ThresholdInv)
+
+#define DECLARE_THRESHOLD_FUNCTION(type, name) \
+    template void name(DevPtr<type>, const type&, const type&, const type&);
+
 FOR_EACH_TYPE(DECLARE_THRESHOLD_FUNCTION, cu_Threshold)
+
+#define DECLARE_ABS_FUNCTION(type, name) \
+    template void name(DevPtr<type>);
+
+FOR_EACH_TYPE(DECLARE_ABS_FUNCTION, cu_Abs)
 
 #define DECLARE_MEDIAN_FUNCTION(type, name) \
     template type name(DevPtr<type>);
