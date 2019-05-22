@@ -128,6 +128,8 @@ public:
     template <VisType V>
     void show(const std::string windowName, bool close = true);
 
+    void visualize() const;
+
     void print() const;
 
     /**

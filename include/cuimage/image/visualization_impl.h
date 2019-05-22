@@ -52,6 +52,50 @@ void Image<T>::show(const std::string windowName, bool close)
         closeWindow(true);
 }
 
+// Default (const) visualization
+template <typename T> 
+cuimage::VisualizerBase* getDefaultVisualizer(const std::string& name, const size_t w, const size_t h);
+
+template <>
+inline cuimage::VisualizerBase* getDefaultVisualizer<uchar>(const std::string& name, const size_t w, const size_t h)
+{
+    return new TypedVisualizer<COLOR_TYPE_GREY>(name, w, h);
+}
+
+template <>
+inline cuimage::VisualizerBase* getDefaultVisualizer<uchar3>(const std::string& name, const size_t w, const size_t h)
+{
+    return new TypedVisualizer<COLOR_TYPE_RGB>(name, w, h);
+}
+
+template <>
+inline cuimage::VisualizerBase* getDefaultVisualizer<float>(const std::string& name, const size_t w, const size_t h)
+{
+    return new TypedVisualizer<COLOR_TYPE_GREY_F>(name, w, h);
+}
+
+template <>
+inline cuimage::VisualizerBase* getDefaultVisualizer<float3>(const std::string& name, const size_t w, const size_t h)
+{
+    return new TypedVisualizer<COLOR_TYPE_RGB_F>(name, w, h);
+}
+
+
+template <typename T>
+void Image<T>::visualize() const
+{
+    static int id = 0;
+    std::string name = "Anonymous Window" + std::to_string(id);
+    id++;
+    std::unique_ptr<VisualizerBase> vis(getDefaultVisualizer<T>(name, w_, h_));
+    
+    vis->create();
+    vis->show(data_, sizeBytes());
+    vis->close(true);
+    
+    std::cerr << "Debug visualization with visualize() might kill your cuda context!" << std::endl;
+}
+
 template <typename T>
 void Image<T>::print() const
 {
