@@ -26,7 +26,7 @@ public:
     /**
      * Create a new DevPtr from exising data
      */
-    DevPtr(T* data, const size_t width, const size_t height);
+    __host__ __device__ DevPtr(T* data, const size_t width, const size_t height);
 
     /**
      * Create a new DevPtr that allocates memory
@@ -36,9 +36,9 @@ public:
     /**
      * Copy by creating new header for data
      */
-     __host__ __device__ DevPtr(const DevPtr<T>& other);
+    __host__ __device__ DevPtr(const DevPtr<T>& other);
 
-     __host__ __device__ ~DevPtr();
+    __host__ __device__ ~DevPtr();
 
     /**
      * Free the data manually
@@ -99,7 +99,6 @@ DevPtr<T>::DevPtr(const size_t width, const size_t height)
   data(nullptr),
   pitch_(0)
 {
-    std::cout << "DevPtr allocating memory, do not forget to free()" << std::endl;
     cudaSafeCall(cudaMalloc(&data, width * height * sizeof(T)));
     cudaSafeCall(cudaMemset(data, 0, width * height * sizeof(T)));
 }
