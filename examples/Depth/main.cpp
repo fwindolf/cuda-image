@@ -14,8 +14,21 @@ int main(int argc, char** argv)
     cudaFree(0);
 
     std::string depth_png = std::string(SOURCE_DIR) + "/examples/data/depth.png";
-    Image<float> depthlr(depth_png);
-    depthlr.show<DEPTH_TYPE>("Depth LR");
+    Image<float> depth_lq(depth_png);
+    depth_lq *= 255.f * 255.f; // Recover original values
+    depth_lq.show<DEPTH_TYPE>("Depth Low Quality");
+
+    Image<float> depth_mask(depth_lq);
+    depth_mask.threshold(0.1f, 0.f, 1.f); // Everything that has a valid value is set to 1, else to 0
+    Image<uchar> mask = depth_mask.as<uchar>() * (uchar)255;
+    mask.show<COLOR_TYPE_GREY>("Mask");
+    
+    depth_lq.resize(0.4, mask);
+    depth_lq.show<DEPTH_TYPE>("Depth LQ Downsampled");
+
+    mask.resize(0.4, mask);
+    depth_lq.resize(2.f, mask, LINEAR_NONZERO);
+    depth_lq.show<DEPTH_TYPE>("Depth LQ Upsampled");
 
     std::string depth_file = std::string(SOURCE_DIR) + "/examples/data/depth.exr";
     Image<float> depth(depth_file);
@@ -34,7 +47,6 @@ int main(int argc, char** argv)
     std::cout << "mean = " << depth.mean() << std::endl;
     std::cout << "norm1 = " << depth.norm1() << std::endl;
     std::cout << "norm2 = " << depth.norm2() << std::endl;
-
 
     for(int i = depth.max(); i > 800; i--)
     {

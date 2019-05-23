@@ -47,7 +47,12 @@ __device__ int2 d_closest(const float p)
 }
 
 template <typename T>
-__device__ T d_interpolate(const DevPtr<T>& image, const int px, const int py, const float fx, const float fy)
+using interpolationFn = nvstd::function<T(const T&, const T&, const uchar, const uchar, const int, const int, const float)>;
+
+template <typename T>
+__device__ T d_interpolate(const DevPtr<T>& image, const int px, const int py, 
+                           const float fx, const float fy,
+                           const interpolationFn<T>& f)
 {
     const int w_old = image.width;
     const int h_old = image.height;    
@@ -64,24 +69,21 @@ __device__ T d_interpolate(const DevPtr<T>& image, const int px, const int py, c
     const T a10 = image(ppx.y, ppy.x);
     const T a01 = image(ppx.x, ppy.y);
     const T a11 = image(ppx.y, ppy.y);
-
-    if (isnan(a00) && isnan(a10) && isnan(a01) && isnan(a11))
-        return a00;
-    
+  
     // In x direction
     const int2 pxn = d_closest(px_);
-
-    const T ax0 = d_interpolate_linear(a00, a10, pxn.x, pxn.y, px_);
-    const T ax1 = d_interpolate_linear(a01, a11, pxn.x, pxn.y, px_);
+    const T ax0 = f(a00, a10, 1, 1, pxn.x, pxn.y, px_);
+    const T ax1 = f(a01, a11, 1, 1, pxn.x, pxn.y, px_);
 
     // in y direction
     const int2 pyn = d_closest(py_);
-
-    return d_interpolate_linear(ax0, ax1, pyn.x, pyn.y, py_);
+    return f(ax0, ax1, 1, 1, pyn.x, pyn.y, py_);
 }
 
 template <typename T>
-__device__ T d_interpolate_masked(const DevPtr<T>& image, const DevPtr<uchar>& mask, const int px, const int py, const float fx, const float fy)
+__device__ T d_interpolate(const DevPtr<T>& image, const DevPtr<uchar>& mask, 
+                           const int px, const int py, const float fx, const float fy,
+                           const interpolationFn<T>& f)
 {
     const int w_old = image.width;
     const int h_old = image.height;    
@@ -104,21 +106,48 @@ __device__ T d_interpolate_masked(const DevPtr<T>& image, const DevPtr<uchar>& m
     const uchar m01 = mask(ppx.x, ppy.y);
     const uchar m11 = mask(ppx.y, ppy.y);
 
-    if (isnan(a00) && isnan(a10) && isnan(a01) && isnan(a11))
-        return a00;
-    
     // In x direction
     const int2 pxn = d_closest(px_);
 
-    const T ax0 = d_interpolate_linear_masked(a00, a10, m00, m10, pxn.x, pxn.y, px_);
-    const T ax1 = d_interpolate_linear_masked(a01, a11, m01, m11, pxn.x, pxn.y, px_);
+    const T ax0 = f(a00, a10, m00, m10, pxn.x, pxn.y, px_);
+    const T ax1 = f(a01, a11, m01, m11, pxn.x, pxn.y, px_);
 
     // in y direction
     const int2 pyn = d_closest(py_);
 
-    return d_interpolate_linear(ax0, ax1, pyn.x, pyn.y, py_);
-} 
+    return f(ax0, ax1, m00 && m10, m01 && m11, pyn.x, pyn.y, py_);
+}
 
+template <typename T>
+__global__ void g_ResizeNearest(DevPtr<T> output, const DevPtr<T> input)
+{
+    const dim3 pos = getPos(blockIdx, blockDim, threadIdx);
+
+    if(pos.x >= output.width || pos.y >= output.height)
+        return;
+
+    const float fx = (float)output.width / input.width;
+    const float fy = (float)output.height / input.height;
+
+    interpolationFn<T> f = d_interpolate_nearest<T>;
+    output(pos.x, pos.y) = d_interpolate(input, pos.x, pos.y, fx, fy, f);
+}
+
+template <typename T>
+__global__ void g_ResizeNearest(DevPtr<T> output, const DevPtr<T> input, 
+                                const DevPtr<uchar> mask)
+{
+    const dim3 pos = getPos(blockIdx, blockDim, threadIdx);
+
+    if(pos.x >= output.width || pos.y >= output.height)
+        return;
+
+    const float fx = (float)output.width / input.width;
+    const float fy = (float)output.height / input.height;
+
+    interpolationFn<T> f = d_interpolate_nearest_masked<T>;
+    output(pos.x, pos.y) = d_interpolate(input, mask, pos.x, pos.y, fx, fy, f);
+}
 
 template <typename T>
 __global__ void g_ResizeLinear(DevPtr<T> output, const DevPtr<T> input)
@@ -131,22 +160,58 @@ __global__ void g_ResizeLinear(DevPtr<T> output, const DevPtr<T> input)
     const float fx = (float)output.width / input.width;
     const float fy = (float)output.height / input.height;
 
-    output(pos.x, pos.y) = d_interpolate(input, pos.x, pos.y, fx, fy);
+    interpolationFn<T> f = d_interpolate_linear<T>;
+    output(pos.x, pos.y) = d_interpolate(input, pos.x, pos.y, fx, fy, f);
 }
 
 template <typename T>
-__global__ void g_ResizeLinear(DevPtr<T> output, const DevPtr<T> input, const DevPtr<uchar> mask)
+__global__ void g_ResizeLinear(DevPtr<T> output, const DevPtr<T> input, 
+                                const DevPtr<uchar> mask)
 {
     const dim3 pos = getPos(blockIdx, blockDim, threadIdx);
 
     if(pos.x >= output.width || pos.y >= output.height)
         return;
-    
+
     const float fx = (float)output.width / input.width;
     const float fy = (float)output.height / input.height;
 
-    output(pos.x, pos.y) = d_interpolate_masked(input, mask, pos.x, pos.y, fx, fy);
+    interpolationFn<T> f = d_interpolate_linear_masked<T>;
+    output(pos.x, pos.y) = d_interpolate(input, mask, pos.x, pos.y, fx, fy, f);
 }
+
+template <typename T>
+__global__ void g_ResizeLinearValid(DevPtr<T> output, const DevPtr<T> input, 
+                                    const DevPtr<uchar> mask)
+{
+    const dim3 pos = getPos(blockIdx, blockDim, threadIdx);
+
+    if(pos.x >= output.width || pos.y >= output.height)
+        return;
+
+    const float fx = (float)output.width / input.width;
+    const float fy = (float)output.height / input.height;
+
+    interpolationFn<T> f = d_interpolate_linear_valid_masked<T>;
+    output(pos.x, pos.y) = d_interpolate(input, mask, pos.x, pos.y, fx, fy, f);
+}
+
+template <typename T>
+__global__ void g_ResizeLinearNonZero(DevPtr<T> output, const DevPtr<T> input, 
+                                const DevPtr<uchar> mask)
+{
+    const dim3 pos = getPos(blockIdx, blockDim, threadIdx);
+
+    if(pos.x >= output.width || pos.y >= output.height)
+        return;
+
+    const float fx = (float)output.width / input.width;
+    const float fy = (float)output.height / input.height;
+
+    interpolationFn<T> f = d_interpolate_linear_nonzero_masked<T>;
+    output(pos.x, pos.y) = d_interpolate(input, mask, pos.x, pos.y, fx, fy, f);
+}
+
 
 template <typename T>
 __global__ void g_applyMask(DevPtr<T> image, const DevPtr<uchar> mask)
@@ -161,6 +226,30 @@ __global__ void g_applyMask(DevPtr<T> image, const DevPtr<uchar> mask)
     
     if (!mask(pos.x, pos.y))
         image(pos.x, pos.y) = make<T>(0);
+}
+
+template <typename T>
+void cu_ResizeNearest(DevPtr<T> output, const DevPtr<T>& input)
+{
+    dim3 block = block2D(32);
+    dim3 grid = grid2D(output.width, output.height, block);
+
+    g_ResizeNearest <<< grid, block >>> (output, input);
+
+    cudaCheckLastCall();
+    cudaDeviceSynchronize();
+}
+
+template <typename T>
+void cu_ResizeNearest(DevPtr<T> output, const DevPtr<T>& input, const DevPtr<uchar>& mask)
+{
+    dim3 block = block2D(32);
+    dim3 grid = grid2D(output.width, output.height, block);
+
+    g_ResizeNearest <<< grid, block >>> (output, input, mask);
+
+    cudaCheckLastCall();
+    cudaDeviceSynchronize();
 }
 
 
@@ -192,6 +281,36 @@ void cu_ResizeLinear(DevPtr<T> output, const DevPtr<T>& input, const DevPtr<ucha
 }
 
 template <typename T>
+void cu_ResizeLinearValid(DevPtr<T> output, const DevPtr<T>& input, const DevPtr<uchar>& mask)
+{
+    assert(input.width == mask.width);
+    assert(input.height == mask.height);
+
+    dim3 block = block2D(32);
+    dim3 grid = grid2D(output.width, output.height, block);
+
+    g_ResizeLinearValid <<< grid, block >>> (output, input, mask);
+
+    cudaCheckLastCall();
+    cudaSafeCall(cudaDeviceSynchronize());
+}
+
+template <typename T>
+void cu_ResizeLinearNonZero(DevPtr<T> output, const DevPtr<T>& input, const DevPtr<uchar>& mask)
+{
+    assert(input.width == mask.width);
+    assert(input.height == mask.height);
+
+    dim3 block = block2D(32);
+    dim3 grid = grid2D(output.width, output.height, block);
+
+    g_ResizeLinearNonZero <<< grid, block >>> (output, input, mask);
+
+    cudaCheckLastCall();
+    cudaSafeCall(cudaDeviceSynchronize());
+}
+
+template <typename T>
 void cu_ApplyMask(DevPtr<T> image, const DevPtr<uchar>& mask)
 {
     assert(image.width == mask.width);
@@ -209,17 +328,22 @@ void cu_ApplyMask(DevPtr<T> image, const DevPtr<uchar>& mask)
 #define DECLARE_RESIZE_FUNCTION(type, function) \
     template void function(DevPtr<type>, const DevPtr<type>&);
 
+
+FOR_EACH_TYPE(DECLARE_RESIZE_FUNCTION, cu_ResizeNearest)
+FOR_EACH_TYPE(DECLARE_RESIZE_FUNCTION, cu_ResizeLinear)
+
+
 #define DECLARE_MASKED_RESIZE_FUNCTION(type, function) \
     template void function(DevPtr<type>, const DevPtr<type>&, const DevPtr<uchar>&);
 
+FOR_EACH_TYPE(DECLARE_MASKED_RESIZE_FUNCTION, cu_ResizeNearest)
+FOR_EACH_TYPE(DECLARE_MASKED_RESIZE_FUNCTION, cu_ResizeLinear)
+FOR_EACH_TYPE(DECLARE_MASKED_RESIZE_FUNCTION, cu_ResizeLinearValid)
+FOR_EACH_TYPE(DECLARE_MASKED_RESIZE_FUNCTION, cu_ResizeLinearNonZero)
+
 #define DECLARE_MASK_FUNCTION(type, function) \
     template void function(DevPtr<type>, const DevPtr<uchar>&);
-    
-FOR_EACH_TYPE(DECLARE_RESIZE_FUNCTION, cu_ResizeLinear)
-FOR_EACH_TYPE(DECLARE_MASKED_RESIZE_FUNCTION, cu_ResizeLinear)
+
 FOR_EACH_TYPE(DECLARE_MASK_FUNCTION, cu_ApplyMask)
-
-
-
 
 } // image

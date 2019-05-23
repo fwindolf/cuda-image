@@ -199,21 +199,22 @@ public:
     /**
      * Resizing
      */
-    Image resize(const size_t width, const size_t height) const;
+    void resize(const size_t width, const size_t height, const ResizeMode mode = LINEAR);
+
+    void resize(const size_t width, const size_t height, const Image<uchar>& mask, const ResizeMode mode = LINEAR);
+
+    void resize(const float factor, const ResizeMode mode = LINEAR);
+
+    void resize(const float factor, const Image<uchar>& mask, const ResizeMode mode = LINEAR);
+        
+
+    Image resized(const size_t width, const size_t height, const ResizeMode mode = LINEAR) const;
     
-    Image resize(const size_t width, const size_t height, const Image<uchar>& mask) const;
+    Image resized(const size_t width, const size_t height, const Image<uchar>& mask, const ResizeMode mode = LINEAR) const;
 
-    void resize(const size_t width, const size_t height, const Image<uchar>& mask);
+    Image resized(const float factor, const ResizeMode mode = LINEAR) const;
 
-    void resize(const size_t width, const size_t height);
-
-    Image resize(const float factor) const;
-
-    Image resize(const float factor, const Image<uchar>& mask) const;
-
-    void resize(const float factor);
-
-    void resize(const float factor, const Image<uchar>& mask);
+    Image resized(const float factor, const Image<uchar>& mask, const ResizeMode mode = LINEAR) const;
 
     void mask(const Image<uchar>& mask);
 

@@ -161,6 +161,7 @@ void Image<T>::swap(Image<T>& other)
     std::swap(data_, other.data_);
     std::swap(w_, other.w_);
     std::swap(h_, other.h_);
+    vis_.release(); // Just in case the resolution changed, ...
 }
 
 template <typename T>

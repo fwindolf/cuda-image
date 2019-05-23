@@ -42,13 +42,15 @@ int main(int argc, char** argv)
     std::cout << "norm1 = " << grey.norm1() << std::endl;
     std::cout << "norm2 = " << grey.norm2() << std::endl;
     
-    Image<float> copy;
-    grey.copyTo(copy);
-    copy.resize(200, 200);
+    Image<float> copy = grey.resized(400, 400);
+    copy.show<COLOR_TYPE_GREY_F>("Resized");
 
     Image<uchar> mask = copy.as<uchar>() * (uchar)255;
     mask.threshold(255, 255, 0); // replace white area with 0s, everything grey with 255s
-    copy.resize(2.f, mask);
+    copy.mask(mask);
 
-    copy.show<COLOR_TYPE_GREY_F>("Grey Copy");       
+    copy.show<COLOR_TYPE_GREY_F>("Masked");       
+
+    copy.resize(3.f);
+    copy.show<COLOR_TYPE_GREY_F>("Resized again");       
 }
