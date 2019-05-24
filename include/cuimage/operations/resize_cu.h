@@ -10,14 +10,6 @@
 
 namespace cuimage
 {
-    enum ResizeMode
-    {
-        NEAREST, 
-        LINEAR, 
-        LINEAR_VALID, 
-        LINEAR_NONZERO        
-    };
-
     template <typename T>
     void cu_ResizeNearest(DevPtr<T> output, const DevPtr<T>& input);
 

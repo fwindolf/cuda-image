@@ -23,4 +23,15 @@ enum VisType
     COLOR_TYPE_RGBA_F
 };
 
-} // image
+enum ResizeMode
+{
+    NEAREST, 
+    LINEAR, 
+    LINEAR_VALID, 
+    LINEAR_NONZERO        
+};
+
+} // cuimage
+
+using cuimage::VisType;
+using cuimage::ResizeMode;
