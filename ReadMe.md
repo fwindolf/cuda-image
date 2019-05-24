@@ -1,35 +1,34 @@
 # Cuda Image
 
-Cuda wrapper for images with basic functionality (math ops, reductions, conversion, visualization)
+Cuda wrapper for images with basic functionality (math ops, reductions, conversion, visualization).
+It comes without any dependency to OpenCV.
 
 ## Install
 
-### Init and build Pangolin
-Pangolin is used to visualize the images.
-
-```
-git submodule init
-
-cd third_party/Pangolin 
-mkdir build && cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=.. & make -j8
-make install
-cd ../../..
-```
-
 ### Build All
 
-This step will build the example application as well as the image static library.
+This step will build cuda-image as library.
+To build the examples, set the `BUILD_EXAMPLES` option.
+
+Set CMAKE_INSTALL_PREFIX to `..` to install the libraries into the source folder. 
+Additionally, you can further further customize by setting `BUILD_EXAMPLES`, `BUILD_TESTS` and `BUILD_SHARED`. 
 
 ```
 mkdir build && cd build
-cmake .. && make -j8
+cmake .. -DCMAKE_INSTALL_PREFIX=.. -DCMAKE_BUILD_TYPE=Release
+make -j8 install
 ```
 
 ## Usage
 
 See the example application for how a standard case of how to use the library.
 All image data manipulation is done via kernels (which themselfes are not very optimized most of the time though).
+
+### Reading from file
+
+You can pass the constructor of an image a path to either `.png` or `.exr` files, and it will automatically try to create
+an image for the provided type. For best performance, the user should handle the conversion between types and load images
+with the suitable type.
 
 ### Typing
 Every image is strongly typed via the template type. All kernels are defined and insantiated for the 
@@ -56,21 +55,43 @@ Note that DevicePtrs can be passed by reference on host side, but on device a co
 
 ### Visualization
 
-The image can be visualized in a named window using the `show(...)` method. 
-On the first call, an opengl texture will be created. The data will be copied to that texture, thus subsequent changes to the image data will not reflect in the shown image.
+The image can be visualized in a named window using the `show(...)` functionality.
+You can either create a typed window and update the content with every call of `show()`, or directly show an image by specifying the type.
+
+Types are:
+- COLOR_TYPE_<GREY, RGB, RGBA> for uchar images
+- COLOR_TYPE_<GREY, RGB, RGBA>_F for float images
+- DEPTH_TYPE for float images, showing the depth map as a 3D illuminated surface
+
+Internally, every time a new window is created, it will also create a OpenGL texture. Show copies the data to the bound texture, the show call blocks for that duration.
+
+To quickly debug images, you can also use the `visualize()` function. It provides only a minimal level of synchronization with the OpenGL thread, leaving the cuda context or bound texture broken some time. The call will also issue a warning informing you of that.
 
 ## Functionality
 
 - [x] Reading from file
-- [x] Casting to DevPtr
+- [ ] Saving to file
+- [x] Direct data access, up- and downloads
+- [x] Usage in cuda kernels via DevPtr
 - [x] Visualization (using Pangolin, with different types)
-- [x] Tranformation (Setting, Replacing, Thresholding)
-- [x] Reductions (Min, Max, Mean, Norm1, Norm2)
+- [x] Tranformation
+    - [x] Set Value
+    - [x] Replace
+    - [x] Threshold
+    - [x] Absolute Value
+- [x] Reductions 
+    - [x] Min
+    - [x] Max
+    - [x] Mean
+    - [x] Median (for 1-channel, pretty slow though)
+    - [x] Norm1
+    - [x] Norm2
+    - [x] Valid pixels (not nan)
+    - [x] NonZero pixels 
 - [x] Color transformations (Gray <-> Color)
 - [x] Casting (Reinterpreting, Copy to new type)
-- [x] Resizing using only valid pixels (Linear, Linear gwith Mask)
+- [x] Resizing using only valid pixels (Linear, Linear with Mask)
 - [x] Masking
-- [x] Simple math operations with operator overloads (+, -, *, /)
-- [ ] Normalization
+- [x] Standard math operations with operator overloads (+, -, *, /)
 
 
