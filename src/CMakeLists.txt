@@ -1,10 +1,7 @@
 SET(LIB_NAME cuimage)
 
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include)
-
-IF(NOT HAVE_OPENCV)
-    INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/third_party/lodepng/include)
-ENDIF()
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/third_party/lodepng/include)
 
 # ------------------------------------------------------------------------
 # cuimage library
@@ -44,7 +41,6 @@ ENDIF()
 SET(LIB_DEPENDENCIES
     lodepng
     pangolin
-    ${OpenCV_LIBS}
     glut
     GLU
     GL

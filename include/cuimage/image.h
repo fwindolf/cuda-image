@@ -4,9 +4,6 @@
 #include <string>
 #include <limits>
 
-#include <opencv2/core.hpp>
-#include <opencv2/highgui.hpp>
-
 #include "cuimage/cuda.h"
 #include "cuimage/operations.h"
 

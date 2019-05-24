@@ -8,12 +8,7 @@
 
 using namespace cuimage;
 
-#ifdef HAVE_OPENCV
-#include <opencv2/core.hpp>
-#include <opencv2/highgui.hpp>
-#else
 #include "lodepng.h"
-#endif
 
 #define TINYEXR_IMPLEMENTATION
 #include "tinyexr.h"

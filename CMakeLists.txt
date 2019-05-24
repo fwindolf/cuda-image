@@ -5,12 +5,11 @@ PROJECT("cuimage")
 # Options
 
 
-OPTION(BUILD_EXAMPLES   "Build examples"    ON)
-OPTION(BUILD_TESTS      "Build tests"       ON)
+OPTION(BUILD_EXAMPLES   "Build examples"    OFF)
+OPTION(BUILD_TESTS      "Build tests"       OFF)
 OPTION(BUILD_SHARED     "Build shared lib"  OFF)
-OPTION(HAVE_OPENCV      "Build with opencv" OFF)
 
-MESSAGE("Building CuImage with tests=${BUILD_TESTS}, examples=${BUILD_EXAMPLES}, shared=${BUILD_SHARED}, with opencv=${HAVE_OPENCV}")
+MESSAGE("Building CuImage with tests=${BUILD_TESTS}, examples=${BUILD_EXAMPLES}, shared=${BUILD_SHARED}")
 
 # ------------------------------------------------------------------------
 # CMake configuration
@@ -30,17 +29,11 @@ ENDIF()
 FIND_PACKAGE(CUDA REQUIRED)
 INCLUDE_DIRECTORIES(${CUDA_TOOLKIT_INCLUDE})
 
-# OpenCV
-IF(HAVE_OPENCV)   
-    FIND_PACKAGE(OpenCV 3.4 REQUIRED core highgui imgproc)
-ENDIF()
-
 # Pangolin
-INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/third_party/Pangolin/include)
-LINK_DIRECTORIES(${PROJECT_SOURCE_DIR}/third_party/Pangolin/lib)
+FIND_PACKAGE(Pangolin REQUIRED PATHS PANGOLIN_DIR)
 
 # Eigen
-INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/third_party/Eigen/include)
+#FIND_PACKAGE(Eigen REQUIRED PATHS EIGEN_DIR)
 
 # LodePng
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/third_party/lodepng/include)
@@ -81,13 +74,6 @@ ENDIF()
 ADD_DEFINITIONS(
     -DSOURCE_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}\"
 )
-
-IF(HAVE_OPENCV)
-    ADD_DEFINITIONS(
-        -DHAVE_OPENCV=\"1\"
-    )
-ENDIF()
-
 
 # ------------------------------------------------------------------------
 # Cuda flags
