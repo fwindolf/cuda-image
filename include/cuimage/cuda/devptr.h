@@ -41,6 +41,11 @@ public:
     __host__ __device__ ~DevPtr();
 
     /**
+     * Copy the DevPtr to device memory
+     */
+    DevPtr* upload() const;
+
+    /**
      * Free the data manually
      * Only call this method if the DevPtr was created from size (and allocates memory)
      */
@@ -71,12 +76,10 @@ public:
      */
     DevPtr<T>& operator=(const DevPtr<T>& other);
 
-    const size_t width, height;
+    const int width, height;
     T* data; // row major data on device
 private:    
     DevPtr();
-
-    const size_t pitch_;    
 };
 
 /**
@@ -87,8 +90,7 @@ template <typename T>
 DevPtr<T>::DevPtr(T* ddata, const size_t width, const size_t height)
 : width(width),
   height(height),
-  data(ddata),
-  pitch_(0)
+  data(ddata)
 {
 }
 
@@ -96,8 +98,7 @@ template <typename T>
 DevPtr<T>::DevPtr(const size_t width, const size_t height)
 : width(width),
   height(height),
-  data(nullptr),
-  pitch_(0)
+  data(nullptr)
 {
     cudaSafeCall(cudaMalloc(&data, width * height * sizeof(T)));
     cudaSafeCall(cudaMemset(data, 0, width * height * sizeof(T)));
@@ -108,8 +109,7 @@ template <typename T>
  __host__ __device__ DevPtr<T>::DevPtr(const DevPtr<T>& other)
  : width(other.width),
    height(other.height),
-   data(other.data),
-   pitch_(0)
+   data(other.data)
 {
 }
 

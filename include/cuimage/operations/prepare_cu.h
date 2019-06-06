@@ -17,6 +17,12 @@ template <typename T, typename Q, typename std::enable_if<has_0_channels<Q>::val
 void cu_SquareNorm(DevPtr<Q> result, const DevPtr<T> image);
 
 /**
+ * Fill the result with squares of every pixel value
+ */
+template <typename T>
+void cu_Square(DevPtr<T> result, const DevPtr<T> image);
+
+/**
  * Fill the result with the sum of all pixel channels
  */
 template <typename T, typename Q, typename std::enable_if<has_0_channels<Q>::value, Q>::type* = nullptr>

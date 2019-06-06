@@ -54,6 +54,28 @@ void cu_SquareNorm(DevPtr<Q> result, const DevPtr<T> image)
     cu_Prepare(result, image, op);
 }
 
+template <typename T>
+struct SquareOp
+{
+    nvstd::function<T(const T&)> __device__ getOp()
+    {
+        return [*this] __device__ (const T& v) -> T
+        {       
+            if (!isvalid(v))  
+                return make<T>(0.f);
+                
+            return (v * v);
+        };
+    }
+};  
+
+template <typename T>
+void cu_Square(DevPtr<T> result, const DevPtr<T> image)
+{
+    SquareOp<T> op;
+    cu_Prepare(result, image, op);
+}
+
 template <typename T, typename Q>
 struct PixelSumOp
 {
@@ -183,5 +205,16 @@ FOR_EACH_TYPE(DECLARE_PREPARE_FUNCTION,  float, cu_MarkAboveValue)
 FOR_EACH_TYPE(DECLARE_PREPARE_OPERATION, float, MarkAboveOp)
 FOR_EACH_TYPE(DECLARE_PREPARE_FUNCTION,  int, cu_MarkAboveValue)
 FOR_EACH_TYPE(DECLARE_PREPARE_OPERATION, int, MarkAboveOp)
+
+#undef DECLARE_PREPARE_FUNCTION
+#define DECLARE_PREPARE_FUNCTION(type, name) \
+    template void name(DevPtr<type>, const DevPtr<type>);
+
+#undef DECLARE_PREPARE_OPERATION
+#define DECLARE_PREPARE_OPERATION(type, operation) \
+    template void cu_Prepare(DevPtr<type>&, const DevPtr<type>&, operation<type>);
+
+FOR_EACH_TYPE(DECLARE_PREPARE_FUNCTION, cu_Square)
+FOR_EACH_TYPE(DECLARE_PREPARE_OPERATION, SquareOp)
 
 } // image

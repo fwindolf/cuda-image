@@ -48,6 +48,12 @@ void Image<T>::abs()
 }
 
 template <typename T>
+void Image<T>::square()
+{
+    cu_Square<T>(*this);
+}
+
+template <typename T>
 T Image<T>::min() const
 {
     return cu_Min<T>(*this);
@@ -66,12 +72,37 @@ float Image<T>::sum() const
 }
 
 template <typename T>
+float Image<T>::sqSum() const
+{
+    // First square all pixels and then add
+    Image<T> square(w_, h_, 0.f);
+    cu_Square<T>(square, *this);
+    return cu_Sum<T>(square);
+}
+
+template <typename T>
 float Image<T>::mean() const
 {
     // First sum all pixel components and then add.
     Image<float> sum(w_, h_, 0.f);
     cu_PixelSum<T, float>(sum, *this);
     return cu_Sum<float>(sum) / (channels<T>() * valid()); // Sum of all components divided by number of components
+}
+
+template <typename T>
+float Image<T>::stdDev() const
+{
+    // Get the mean of the image
+    float mean = this->mean();
+
+    // Squared difference of image and mean
+    Image<T> tmp = *this - mean;
+    cu_Square<T>(tmp);
+
+    // Get the mean of the squared difference
+    float variance = tmp.mean();
+
+    return sqrtf(variance);
 }
 
 template <typename T>

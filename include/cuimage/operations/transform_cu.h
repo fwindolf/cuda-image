@@ -53,6 +53,12 @@ template <typename T>
 void cu_Abs(DevPtr<T> image);
 
 /**
+ * Replace every value with its square
+ */
+template <typename T>
+void cu_Square(DevPtr<T> image);
+
+/**
  * Get the approximate median of all values in image
  */
 template <typename T>

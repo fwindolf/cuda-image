@@ -148,6 +148,8 @@ public:
     void replaceNan(const T& value);
 
     void abs();
+
+    void square();
         
     /** 
      * Reductions
@@ -158,7 +160,11 @@ public:
 
     float sum() const;
 
+    float sqSum() const;
+
     float mean() const;
+
+    float stdDev() const;
 
     // Only possible for 0-channel types
     template<class Q = T, typename std::enable_if<has_0_channels<Q>::value, Q>::type* = nullptr>

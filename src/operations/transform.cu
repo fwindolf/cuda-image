@@ -217,6 +217,27 @@ void cu_Abs(DevPtr<T> image)
     cu_Transform(image, abs_op);
 }
 
+template <typename T>
+struct Square
+{
+    // Return a function ptr from lambda that sets the pixel to value
+    nvstd::function<void(T&)> __device__ getOp()
+    {
+        return [*this] __device__ (T& v) 
+        {
+            v *= v;
+        };
+    }
+};
+
+
+template <typename T>
+void cu_Square(DevPtr<T> image)
+{
+    Square<T> square_op;
+    cu_Transform(image, square_op);
+}
+
 template <typename T, typename std::enable_if<has_0_channels<T>::value, T>::type* = nullptr>
 struct MedianOp
 {
@@ -295,6 +316,7 @@ FOR_EACH_TYPE(DECLARE_TRANSFORM_FUNCTION, Threshold)
 FOR_EACH_TYPE(DECLARE_TRANSFORM_FUNCTION, ThresholdInv)
 FOR_EACH_TYPE(DECLARE_TRANSFORM_FUNCTION, ThresholdLowHigh)
 FOR_EACH_TYPE(DECLARE_TRANSFORM_FUNCTION, Absolute)
+FOR_EACH_TYPE(DECLARE_TRANSFORM_FUNCTION, Square)
 
 #define DECLARE_SET_FUNCTION(type, name) \
     template void name(DevPtr<type>, const type&);
@@ -314,10 +336,12 @@ FOR_EACH_TYPE(DECLARE_REPLACE_FUNCTION, cu_ThresholdInv)
 
 FOR_EACH_TYPE(DECLARE_THRESHOLD_FUNCTION, cu_Threshold)
 
-#define DECLARE_ABS_FUNCTION(type, name) \
+#define DECLARE_MODIFYING_FUNCTION(type, name) \
     template void name(DevPtr<type>);
 
-FOR_EACH_TYPE(DECLARE_ABS_FUNCTION, cu_Abs)
+FOR_EACH_TYPE(DECLARE_MODIFYING_FUNCTION, cu_Abs)
+FOR_EACH_TYPE(DECLARE_MODIFYING_FUNCTION, cu_Square)
+
 
 #define DECLARE_MEDIAN_FUNCTION(type, name) \
     template type name(DevPtr<type>);

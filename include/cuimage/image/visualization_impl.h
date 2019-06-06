@@ -80,6 +80,11 @@ inline cuimage::VisualizerBase* getDefaultVisualizer<float3>(const std::string& 
     return new TypedVisualizer<COLOR_TYPE_RGB_F>(name, w, h);
 }
 
+template <>
+inline cuimage::VisualizerBase* getDefaultVisualizer<float4>(const std::string& name, const size_t w, const size_t h)
+{
+    return new TypedVisualizer<COLOR_TYPE_RGBA_F>(name, w, h);
+}
 
 template <typename T>
 void Image<T>::visualize() const
