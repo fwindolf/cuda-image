@@ -11,6 +11,7 @@ ADD_EXECUTABLE(${APP}
 )
 
 TARGET_LINK_LIBRARIES(${APP}
+    ${OpenCV_LIBS}
     cudart
     cuimage
 )

@@ -46,22 +46,11 @@ ELSE()
 	FIND_PACKAGE(Eigen REQUIRED)
 ENDIF()
 
-# LodePng
-INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/third_party/lodepng/include)
-LINK_DIRECTORIES(${PROJECT_SOURCE_DIR}/lib)
-
-IF (BUILD_SHARED)
-    ADD_LIBRARY(lodepng SHARED 
-        ${PROJECT_SOURCE_DIR}/third_party/lodepng/src/lodepng.cpp
-    )
-ELSE()
-    ADD_LIBRARY(lodepng STATIC
-        ${PROJECT_SOURCE_DIR}/third_party/lodepng/src/lodepng.cpp
-    )
-ENDIF()
-
-# TinyExr
+#TinyExr
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/third_party/tinyexr)
+
+# OpenCV (w/o cuda support)
+FIND_PACKAGE(OpenCV 3.4 REQUIRED core highgui imgproc)
 
 # GTest
 IF(BUILD_TESTS)

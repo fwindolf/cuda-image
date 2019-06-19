@@ -51,6 +51,8 @@ int main(int argc, char** argv)
 
     copy.show<COLOR_TYPE_GREY_F>("Masked");       
 
+    copy.save("masked.png");
+
     copy.resize(3.f);
-    copy.show<COLOR_TYPE_GREY_F>("Resized again");       
+    copy.show<COLOR_TYPE_GREY_F>("Resized again");
 }

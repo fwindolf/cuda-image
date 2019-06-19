@@ -1,7 +1,6 @@
 # Cuda Image
 
 Cuda wrapper for images with basic functionality (math ops, reductions, conversion, visualization).
-It comes without any dependency to OpenCV.
 
 ## Install
 
@@ -69,8 +68,8 @@ To quickly debug images, you can also use the `visualize()` function. It provide
 
 ## Functionality
 
-- [x] Reading from file
-- [ ] Saving to file
+- [x] Reading from file (incomplete)
+- [x] Saving to file (incomplete)
 - [x] Direct data access, up- and downloads
 - [x] Usage in cuda kernels via DevPtr
 - [x] Visualization (using Pangolin, with different types)
