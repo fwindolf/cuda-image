@@ -9,6 +9,8 @@
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 
+#include "cuimage/file/file.h"
+
 namespace cuimage
 {
 
@@ -17,7 +19,7 @@ namespace cuimage
  * @brief Write images to  file
  */
 template <typename T>
-class FileWriter
+class FileWriter : public File
 {
 public:
     FileWriter(const std::string& fileName, const int width, const int height);

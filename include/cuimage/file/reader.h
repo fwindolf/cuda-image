@@ -5,14 +5,12 @@
  */
 #pragma once
 
+#include "cuimage/cuda/devptr.h"
+#include "cuimage/file/file.h"
+
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
-
-#include "cuimage/cuda/devptr.h"
-
-#define TINYEXR_IMPLEMENTATION
-#include "tinyexr.h"
 
 namespace cuimage
 {
@@ -22,7 +20,7 @@ namespace cuimage
  * @brief Read images from file
  */
 template <typename T>
-class FileReader
+class FileReader : public File
 {
 public:
     ~FileReader(){};
