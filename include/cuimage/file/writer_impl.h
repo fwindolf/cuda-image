@@ -16,42 +16,42 @@ FileWriter<T>::FileWriter(
  */
 
 template <> 
-bool FileWriter<float>::write(float* data)
+inline bool FileWriter<float>::write(float* data)
 {
     cv::Mat img(height_, width_, CV_32FC1, data);
     if (type_ == "png" || type_ == "jpg")
         img *= 255.f;
 
-    cv::imwrite(fileName_, img);
+    return cv::imwrite(fileName_, img);
 }
 
 template <>
-bool FileWriter<float3>::write(float3*  data)
+inline bool FileWriter<float3>::write(float3*  data)
 {
     cv::Mat img(height_, width_, CV_32FC3, data);
     if (type_ == "png" || type_ == "jpg")
         img *= 255.f;
 
-    cv::imwrite(fileName_, img);
+    return cv::imwrite(fileName_, img);
 }
 
 template <> 
-bool FileWriter<uchar>::write(uchar* data)
+inline bool FileWriter<uchar>::write(uchar* data)
 {
     cv::Mat img(height_, width_, CV_8UC1, data);
-    cv::imwrite(fileName_, img);
+    return cv::imwrite(fileName_, img);
 }
 
 template <>
-bool FileWriter<uchar3>::write(uchar3* data)
+inline bool FileWriter<uchar3>::write(uchar3* data)
 {
     cv::Mat img(height_, width_, CV_8UC3, data);
-    cv::imwrite(fileName_, img);
+    return cv::imwrite(fileName_, img);
 }
 
 template <>
-bool FileWriter<uchar4>::write(uchar4* data)
+inline bool FileWriter<uchar4>::write(uchar4* data)
 {
     cv::Mat img(height_, width_, CV_8UC4, data);
-    cv::imwrite(fileName_, img);
+    return cv::imwrite(fileName_, img);
 }
