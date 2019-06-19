@@ -8,6 +8,7 @@
 #include "cuimage/operations.h"
 
 #include "cuimage/file/reader.h"
+#include "cuimage/file/writer.h"
 
 #include "cuimage/visualize/visualize.h"
 
@@ -104,6 +105,8 @@ public:
     T* download(const size_t first_n) const;
 
     void upload(const T* hdata, const size_t width, const size_t height);
+
+    bool save(const std::string& fileName);
 
     /**
      * Conversion to DevPtr

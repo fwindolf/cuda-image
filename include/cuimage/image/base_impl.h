@@ -51,67 +51,11 @@ Image<T>::Image(size_t w, size_t h, const float initVal)
     setTo(initVal);
 }
 
-template <>
-inline DevPtr<float> Image<float>::read(const std::string& fileName)
+template <typename T>
+inline DevPtr<T> Image<T>::read(const std::string& fileName)
 {
-    FileReader f;
-    auto t = f.type(fileName);
-    if (t == "EXR")
-        return f.readExr(fileName);
-    else if (t == "PNG")
-        return f.readPngGreyF(fileName);
-    else
-        throw std::runtime_error("Invalid file type: " + t);
-}
-
-template <>
-inline DevPtr<float3> Image<float3>::read(const std::string& fileName)
-{
-    FileReader f;
-    auto t = f.type(fileName);
-    if (t == "PNG")
-        return f.readPngF(fileName);
-    else
-        throw std::runtime_error("Invalid file type: " + t);
-}
-
-template <>
-inline DevPtr<uchar> Image<uchar>::read(const std::string& fileName)
-{
-    FileReader f;
-    auto t = f.type(fileName);
-    if (t == "PNG")
-        return f.readPngGrey(fileName);
-    else
-        throw std::runtime_error("Invalid file type: " + t);
-}
-
-template <>
-inline DevPtr<uchar3> Image<uchar3>::read(const std::string& fileName)
-{
-    FileReader f;
-    auto t = f.type(fileName);
-    if (t == "PNG")
-    {
-        DevPtr<uchar4> tmp = f.readPng(fileName);
-        DevPtr<uchar3> output(tmp.width, tmp.height);
-        cu_ColorToColor<uchar4, uchar3>(output, tmp);
-        tmp.free();
-        return output;
-    }
-    else
-        throw std::runtime_error("Invalid file type: " + t);
-}
-
-template <>
-inline DevPtr<uchar4> Image<uchar4>::read(const std::string& fileName)
-{
-    FileReader f;
-    auto t = f.type(fileName);
-    if (t == "PNG")
-        return f.readPng(fileName);
-    else
-        throw std::runtime_error("Invalid file type: " + t);
+    FileReader<T> f;
+    return f.read(fileName);
 }
 
 template <typename T>
@@ -268,4 +212,13 @@ void Image<T>::upload(const T* hdata, const size_t width, const size_t height)
     assert(w_ == width);
     assert(h_ == height);
     cudaSafeCall(cudaMemcpy(data_, hdata, sizeBytes(), cudaMemcpyHostToDevice));
+}
+
+template <typename T>
+bool Image<T>::save(const std::string& fileName)
+{
+    assert(data_);
+    
+    FileWriter<T> f(fileName, w_, h_);
+    return f.write(download());
 }

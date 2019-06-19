@@ -1,216 +1,176 @@
-
-
-template <typename TO>
-DevPtr<TO> convertPng(const DevPtr<uchar3>& input);
-
-template <>
-DevPtr<float3> convertPng(const DevPtr<uchar3>& input)
+cv::Mat readExr(const std::string& fileName)
 {
-    DevPtr<float3> output(input.w, input.h); // Allocates
-    cu_Convert<uchar3, float3>(output, input);
-    return output;
-}
+    EXRVersion exr_version;
 
-template <>
-DevPtr<float> convertPng(const DevPtr<uchar3>& input)
-{
-    DevPtr<float> output(input.w, input.h); // Allocates
-    DevPtr<float3> tmp(intput.w, input.h); // Allocates
-    cu_Convert<uchar3, float3>(tmp, input);
-    cu_ColorToGray<float3, float>(output, tmp);
-    tmp.free();
-    return output;
-}
+    std::vector<float> image;
 
-template <typename T, typename TO>
-DevPtr<TO> convertPng(const DevPtr<T>& input);
+    int ret = ParseEXRVersionFromFile(&exr_version, fileName.c_str());
+    if (ret != 0)
+    {
+        std::cerr << "Invalid EXR file: " << fileName << std::endl;
+        return cv::Mat();
+    }
 
-template <typename T, typename TO, typename 
-    std::enable_if<std::is_same<T, TO>::value, T>::type* = nullptr>
-DevPtr<TO> convertPng(const DevPtr<T>& input)
-{
-    return input;
-}
+    if (exr_version.multipart)
+    {
+        // must be multipart flag is true.
+        std::cerr << "Invalid EXR file, " << fileName << " is multipart"
+                  << std::endl;
+        return cv::Mat();
+    }
 
-template <typename T, typename TO, typename 
-    std::enable_if<!is_same_type<T, TO>::value && has_same_channels<T, TO>::value, T>::type* = nullptr>
-DevPtr<TO> convertPng(const DevPtr<T>& input)
-{
-    DevPtr<TO> output(input.w, input.h); // Allocates
-    cu_Convert<T, TO>(output, input);
-    return output;
-}
+    // 2. Read EXR header
+    EXRHeader exr_header;
+    InitEXRHeader(&exr_header);
 
-template <typename T, typename TO, typename 
-    std::enable_if<is_same_type<T, TO>::value && !has_same_channels<T, TO>::value && 
-                   (has_0_channels<TO>::value || has_1_channels<TO>::value), T>::type* = nullptr>
-DevPtr<TO> convertPng(const DevPtr<T>& input)
-{
-    DevPtr<TO> output(input.w, input.h); // Allocates
-    cu_ColorToGray<T, TO>(output, input);
-    return output;
-}
+    const char* err = nullptr;
+    ParseEXRHeaderFromFile(&exr_header, &exr_version, fileName.c_str(), &err);
+    if (err)
+    {
+        std::cerr << "Parse EXR failed for file " << fileName
+                  << ", err: " << err << std::endl;
+        FreeEXRErrorMessage(err); // free's buffer for an error message
+        return cv::Mat();
+    }
 
-template <typename T, typename TO, typename 
-    std::enable_if<is_same_type<T, TO>::value && !has_same_channels<T, TO>::value && 
-                   (has_4_channels<TO>::value || has_3_channels<TO>::value), T>::type* = nullptr>
-DevPtr<TO> convertPng(const DevPtr<T>& input)
-{
-    DevPtr<TO> output(input.w, input.h); // Allocates
-    cu_ColorToColor<T, TO>(output, input);
-    return output;
-}
+    EXRImage exr_image;
+    InitEXRImage(&exr_image);
 
-DevPtr<float> convertPng(const DevPtr<uchar4>& input)
-{
-    
-}
+    LoadEXRImageFromFile(&exr_image, &exr_header, fileName.c_str(), &err);
+    if (err)
+    {
+        std::cerr << "Loading EXR failed for file " << fileName
+                  << ", err: " << err << std::endl;
+        FreeEXRHeader(&exr_header);
+        FreeEXRErrorMessage(err); // free's buffer for an error message
+        return cv::Mat();
+    }
 
-DevPtr<TO> readPng(const std::string fileName)
-{
-    assert(type(fileName) == "PNG");
-
-    size_t w, h, c;
-    std::vector<uchar> image = readPng(fileName, w, h, c); 
-    assert(c == 4);
-
-    DevPtr<uchar4> devptr = upload<char, char4>(image.data(), w, h, c);
-    DevPtr<TO> output = convertPng<TO>(devPtr);
-    devptr.free();
-    return output;
-}
-
-template<typename TO, typename std::enable_if<is_float_type<TO>::value, TO>::type* = nullptr>
-DevPtr<TO> FileReader::read(const std::string fileName, size_t& width, size_t& height, size_t& c) const
-{
-    std::string fileType = fileName.substr(fileName.find_last_of(".") + 1);
-    std::transform(fileType.begin(), fileType.end(), fileType.begin(), ::toupper);
-
-    assert(fileType == "EXR");
-
-    std::vector<float> image = readExr(fileName, width, height, c);
-    auto devptr = upload<float, float>(image.data(), width, height, c);
-    return convert<float, TO>(devptr);
-}
-
-template<typename TO, typename std::enable_if<!is_float_type<TO>::value, TO>::type* = nullptr>
-DevPtr<TO> FileReader::read(const std::string fileName, size_t& width, size_t& height, size_t& c) const
-{
-    std::string fileType = fileName.substr(fileName.find_last_of(".") + 1);
-    std::transform(fileType.begin(), fileType.end(), fileType.begin(), ::toupper);
-
-    if (fileType == "PNG")
-    {        
-        std::vector<uchar> image = readPng(fileName, width, height, c);
-        
-        if (c == 3)
+    // 3. Access image data
+    // Copy image to vector
+    if (!exr_header.tiled && exr_image.images)
+    {
+        if (exr_image.num_channels == 1)
         {
-            auto devptr = upload<uchar, uchar3>(image.data(), width, height, c);
-            return convert<uchar3, TO>(devptr);
+            // Row format (R, R, R, R, ... )
+            image.resize(exr_image.width * exr_image.height);
+            float val;
+            for (int i = 0; i < image.size(); i++)
+            {
+                val = reinterpret_cast<float**>(exr_image.images)[0][i];
+                if (val < 0 || val > 1e12)
+                    val = 0;
+
+                // Add to array
+                image.at(i) = val;
+            }
         }
-        else if (c == 4)
+        else if (exr_image.num_channels == 3)
         {
-            auto devptr = upload<uchar, uchar4>(image.data(), width, height, c);
-            return convert<uchar4, TO>(devptr);
+            // Scanline format (RGBA, RGBA, ...)
+            image.resize(exr_image.width * exr_image.height * 3);
+            float val, val_r = 0, val_g = 0, val_b = 0;
+            for (int i = 0; i < exr_image.width * exr_image.height; i++)
+            {
+                for (int c = 0; c < 3; c++)
+                {
+                    std::string c_name = exr_header.channels[c].name;
+                    val = reinterpret_cast<float**>(exr_image.images)[c][i];
+                    if (val < 0 || val > 1e12)
+                        val = 0;
+
+                    if (c_name == "R")
+                        val_r = val;
+                    else if (c_name == "G")
+                        val_g = val;
+                    else if (c_name == "B")
+                        val_b = val;
+                }
+
+                // Add to array
+                image.at(3 * i + 0) = val_r;
+                image.at(3 * i + 1) = val_g;
+                image.at(3 * i + 2) = val_b;
+            }
         }
-        else
-        {
-            throw std::runtime_error("Invalid numbers of channels in PNG file");        
-        }            
+    }
+    else if (exr_header.tiled && exr_image.tiles)
+    {
+        // tiled format (R, R, ..., G, G ..., ...)
+        std::cerr << "EXR in unsupported tiled format" << std::endl;
+        return cv::Mat();
     }
     else
     {
-        throw std::runtime_error("Cannot read files of type " + fileType);        
+        std::cerr << "EXR file " << fileName << " has not/invalid content"
+                  << std::endl;
+        return cv::Mat();
     }
+
+    return cv::Mat(exr_image.height, exr_image.width,
+        CV_32FC(exr_image.num_channels), image.data());
 }
 
-template <typename T, typename TO > 
-DevPtr<TO> FileReader::upload(const T* h_data, const size_t width, const size_t height, const size_t chans) const
+template <typename T> DevPtr<T> FileReader<T>::upload(cv::Mat& image)
 {
-    // If the format matches, upload to gpu
-    assert(sizeof(TO) == sizeof(T) * chans);
+    assert(image.isContinuous());
+    assert(image.elemSize() == sizeof(T));
+    assert(image.cols > 0 && image.rows > 0);
 
-    TO* d_data;
-    cudaSafeCall(cudaMalloc(&d_data, width * height * sizeof(TO)));
-    cudaSafeCall(cudaMemcpy(d_data, h_data, width * height * sizeof(TO), cudaMemcpyHostToDevice));
-
-    return DevPtr<TO>(d_data, width, height);
+    DevPtr<T> d_data(image.cols, image.rows);
+    cudaSafeCall(cudaMemcpy(d_data.data, image.data,
+        d_data.width * d_data.height * sizeof(T), cudaMemcpyHostToDevice));
+    return d_data;
 }
 
 /**
- * Same type
+ * Incomplete reads using OpenCV
+ * - float, float3
+ * - uchar, uchar3, uchar4
  */
-template <typename T, typename TO, typename
-    std::enable_if<std::is_same<T, TO>::value, T>::type* = nullptr>
-DevPtr<TO> convertDevPtr(const DevPtr<T>& input)
-{   
-    DevPtr<TO> output(input);
-    return output;
-}
 
-/**
- * Same channels, convert only type
- */
-template <typename T, typename TO, typename
-    std::enable_if<!std::is_same<T, TO>::value && !is_same_type<T, TO>::value && has_same_channels<T, TO>::value, T>::type* = nullptr>
-DevPtr<TO> convertDevPtr(const DevPtr<T>& input)
-{  
-    DevPtr<TO> output(input.width, input.height); // Allocates
-    cu_Convert<T, TO>(output, input);
-    return output;
-}
-
-/**
- * Same type, convert color to gray
- */
-template <typename T, typename TO, typename
-    std::enable_if<is_same_type<T, TO>::value && 
-       ((has_4_channels<T>::value && has_1_channels<TO>::value) ||
-        (has_3_channels<T>::value && has_1_channels<TO>::value) ||
-        (has_4_channels<T>::value && has_0_channels<TO>::value) ||
-        (has_3_channels<T>::value && has_0_channels<TO>::value))
-    , T>::type* = nullptr>
-DevPtr<TO> convertDevPtr(const DevPtr<T>& input)
+template <> DevPtr<float> FileReader<float>::read(const std::string& fileName)
 {
-    DevPtr<TO> output(input.width, input.height); // Allocates
-    cu_ColorToGray<T, TO>(output, input);
-    return output;
+    auto type = fileName.substr(fileName.find(".") + 1);
+    cv::Mat img;
+    if (type == "exr")
+        img = readExr(fileName);
+    else
+        img = cv::imread(fileName, cv::IMREAD_GRAYSCALE | cv::IMREAD_ANYDEPTH);
+
+    img.convertTo(img, CV_32FC1);
+    return upload(img);
 }
 
-/**
- * Same type, convert gray to color
- */
-template <typename T, typename TO, typename
-    std::enable_if<is_same_type<T, TO>::value && 
-       ((has_0_channels<T>::value && has_3_channels<TO>::value) ||
-        (has_0_channels<T>::value && has_4_channels<TO>::value) ||
-        (has_1_channels<T>::value && has_3_channels<TO>::value) ||
-        (has_1_channels<T>::value && has_4_channels<TO>::value))
-    , T>::type* = nullptr>
-DevPtr<TO> convertDevPtr(const DevPtr<T>& input)
+template <>
+DevPtr<float3> FileReader<float3>::read(const std::string& fileName)
 {
-    DevPtr<TO> output(input.width, input.height); // Allocates
-    cu_GrayToColor<T, TO>(output, input);
-    return output;
+    cv::Mat img = cv::imread(fileName, cv::IMREAD_COLOR | cv::IMREAD_ANYDEPTH);
+    img.convertTo(img, CV_32FC3);
+    cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
+    return upload(img);
 }
 
-/**
- * Same type, convert color to color
- */
-template <typename T, typename TO, typename
-    std::enable_if<is_same_type<T, TO>::value && 
-       ((has_4_channels<T>::value && has_3_channels<TO>::value) ||
-        (has_3_channels<T>::value && has_4_channels<TO>::value))
-    , T>::type* = nullptr>
-DevPtr<TO> convertDevPtr(const DevPtr<T>& input)
+template <> DevPtr<uchar> FileReader<uchar>::read(const std::string& fileName)
 {
-    DevPtr<TO> output(input.width, input.height); // Allocates
-    cu_ColorToColor<T, TO>(output, input);
-        return output;
+    cv::Mat img = cv::imread(fileName, cv::IMREAD_GRAYSCALE);
+    img.convertTo(img, CV_8UC1);
+    return upload(img);
 }
 
-template <typename T, typename TO>
-DevPtr<TO> FileReader::convert(const DevPtr<T>& input) const
+template <>
+DevPtr<uchar3> FileReader<uchar3>::read(const std::string& fileName)
 {
-    return convertDevPtr<T, TO>(input);
+    cv::Mat img = cv::imread(fileName, cv::IMREAD_COLOR);
+    img.convertTo(img, CV_8UC3);
+    return upload(img);
+}
+
+template <>
+DevPtr<uchar4> FileReader<uchar4>::read(const std::string& fileName)
+{
+    cv::Mat img = cv::imread(fileName, cv::IMREAD_COLOR);
+    img.convertTo(img, CV_8UC3);
+    cv::cvtColor(img, img, cv::COLOR_BGR2RGBA);
+    return upload(img);
 }

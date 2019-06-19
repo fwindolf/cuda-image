@@ -15,7 +15,6 @@ int main(int argc, char** argv)
 
     std::string depth_png = std::string(SOURCE_DIR) + "/examples/data/depth.png";
     Image<float> depth_lq(depth_png);
-    depth_lq *= 255.f * 255.f; // Recover original values
     depth_lq.show<DEPTH_TYPE>("Depth Low Quality");
 
     Image<float> depth_mask(depth_lq);

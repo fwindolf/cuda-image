@@ -39,7 +39,6 @@ ELSE()
 ENDIF()
 
 SET(LIB_DEPENDENCIES
-    lodepng
     pangolin
     glut
     GLU
@@ -67,7 +66,7 @@ INSTALL(TARGETS ${LIB_NAME}
 )
 
 # Install lodepng and pangolin shared library
-INSTALL(TARGETS lodepng
+INSTALL(TARGETS
     LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
 )
