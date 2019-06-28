@@ -27,7 +27,15 @@ inline DevPtr<float> FileReader<float>::read(const std::string& fileName)
     else
         img = cv::imread(fileName, cv::IMREAD_GRAYSCALE | cv::IMREAD_ANYDEPTH);
 
+    // Make float
     img.convertTo(img, CV_32FC1);
+    
+    // Estimate range and normalize 
+    double minv, maxv;
+    cv::minMaxIdx(img, &minv, &maxv);
+    if (minv >= 0 && maxv > 1 && maxv <= 255)
+        img /= 255.f;
+
     return upload(img);
 }
 
@@ -36,6 +44,12 @@ inline DevPtr<float3> FileReader<float3>::read(const std::string& fileName)
 {
     cv::Mat img = cv::imread(fileName, cv::IMREAD_COLOR | cv::IMREAD_ANYDEPTH);
     img.convertTo(img, CV_32FC3);
+
+    double minv, maxv;
+    cv::minMaxIdx(img, &minv, &maxv);
+    if (minv >= 0 && maxv > 1 && maxv <= 255)
+        img /= 255.f;
+
     cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
     return upload(img);
 }
