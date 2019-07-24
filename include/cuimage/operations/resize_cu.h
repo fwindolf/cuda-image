@@ -20,11 +20,14 @@ namespace cuimage
     void cu_ResizeLinear(DevPtr<T> output, const DevPtr<T>& input);
 
     template <typename T>
+    void cu_ResizeLinearValid(DevPtr<T> output, const DevPtr<T>& input);
+
+    template <typename T>
     void cu_ResizeLinear(DevPtr<T> output, const DevPtr<T>& input, const DevPtr<uchar>& mask);
 
     template <typename T>
     void cu_ResizeLinearValid(DevPtr<T> output, const DevPtr<T>& input, const DevPtr<uchar>& mask);
-
+    
     template <typename T>
     void cu_ResizeLinearNonZero(DevPtr<T> output, const DevPtr<T>& input, const DevPtr<uchar>& mask);
 

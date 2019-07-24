@@ -86,8 +86,10 @@ Image<T> Image<T>::resized(const size_t width, const size_t height, const Resize
         cu_ResizeLinear<T>(output, *this);
         break;
     case LINEAR_VALID:
+        cu_ResizeLinearValid<T>(output, *this);        
+        break;
     case LINEAR_NONZERO:
-        throw std::runtime_error("Valid/NonZero resizing is only possible if a mask is provided!");
+        throw std::runtime_error("NonZero resizing is only possible if a mask is provided!");
     default:
         throw std::runtime_error("Invalid mode for resizing!");
     }
