@@ -5,10 +5,10 @@
  */
 #pragma once
 
-#include <assert.h>
-
 #include "cuimage/cuda/type.h"
 #include "cuimage/cuda/utils.h"
+
+#include <assert.h>
 
 namespace cuimage
 {
@@ -16,17 +16,17 @@ namespace cuimage
 /**
  * @class DevPtr
  * @brief Device pointer wrapper of cuda type
- * 
+ *
  * Inspired by the OpenCV device pointer class
  */
-template <typename T>
-class DevPtr
+template <typename T> class DevPtr
 {
 public:
     /**
      * Create a new DevPtr from exising data
      */
-    __host__ __device__ DevPtr(T* data, const size_t width, const size_t height);
+    __host__ __device__ DevPtr(
+        T* data, const size_t width, const size_t height);
 
     /**
      * Create a new DevPtr that allocates memory
@@ -47,7 +47,8 @@ public:
 
     /**
      * Free the data manually
-     * Only call this method if the DevPtr was created from size (and allocates memory)
+     * Only call this method if the DevPtr was created from size (and allocates
+     * memory)
      */
     void free();
 
@@ -78,7 +79,7 @@ public:
 
     const int width, height;
     T* data; // row major data on device
-private:    
+private:
     DevPtr();
 };
 
@@ -88,46 +89,39 @@ private:
 
 template <typename T>
 DevPtr<T>::DevPtr(T* ddata, const size_t width, const size_t height)
-: width(width),
-  height(height),
-  data(ddata)
+    : width(width)
+    , height(height)
+    , data(ddata)
 {
 }
 
 template <typename T>
 DevPtr<T>::DevPtr(const size_t width, const size_t height)
-: width(width),
-  height(height),
-  data(nullptr)
+    : width(width)
+    , height(height)
+    , data(nullptr)
 {
     cudaSafeCall(cudaMalloc(&data, width * height * sizeof(T)));
     cudaSafeCall(cudaMemset(data, 0, width * height * sizeof(T)));
 }
 
-
 template <typename T>
- __host__ __device__ DevPtr<T>::DevPtr(const DevPtr<T>& other)
- : width(other.width),
-   height(other.height),
-   data(other.data)
+__host__ __device__ DevPtr<T>::DevPtr(const DevPtr<T>& other)
+    : width(other.width)
+    , height(other.height)
+    , data(other.data)
 {
 }
 
-template <typename T>
- __host__ __device__ DevPtr<T>::~DevPtr()
-{
-}
+template <typename T> __host__ __device__ DevPtr<T>::~DevPtr() {}
 
-template <typename T>
-void DevPtr<T>::free()
+template <typename T> void DevPtr<T>::free()
 {
     cudaSafeCall(cudaFree(data));
     data = nullptr;
 }
 
-
-template <typename T>
-__device__ T& DevPtr<T>::operator()(const size_t idx)
+template <typename T> __device__ T& DevPtr<T>::operator()(const size_t idx)
 {
     assert(idx < width * height);
     return data[idx];
@@ -154,29 +148,28 @@ __device__ const T DevPtr<T>::operator()(const size_t x, const size_t y) const
     return data[y * width + x];
 }
 
-template <typename T>
-DevPtr<T>& DevPtr<T>::operator=(const DevPtr<T>& other)
+template <typename T> DevPtr<T>& DevPtr<T>::operator=(const DevPtr<T>& other)
 {
     if (data == nullptr)
-        cudaSafeCall(cudaMalloc(&data,  width * height * sizeof(T)));        
-    
+        cudaSafeCall(cudaMalloc(&data, width * height * sizeof(T)));
+
     if (this == &other)
         throw std::runtime_error("Self-assignment not possible!");
 
     if (other.width != width && other.height != height)
-        throw std::runtime_error("Assignment with different (data) sizes not possible!");
+        throw std::runtime_error(
+            "Assignment with different (data) sizes not possible!");
 
-    cudaSafeCall(cudaMemcpy(data, other.data, width * height * sizeof(T), cudaMemcpyDeviceToDevice));
+    cudaSafeCall(cudaMemcpy(data, other.data, width * height * sizeof(T),
+        cudaMemcpyDeviceToDevice));
     return *this;
 }
 
 /**
  * Explicit instantiation
  */
-#define INST_DEVPTR(type, name) \
-    template class name<type>;
+#define INST_DEVPTR(type, name) template class name<type>;
 
 FOR_EACH_TYPE(INST_DEVPTR, DevPtr)
-
 
 } // image

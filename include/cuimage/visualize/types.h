@@ -25,13 +25,13 @@ enum VisType
 
 enum ResizeMode
 {
-    NEAREST, 
-    LINEAR, 
-    LINEAR_VALID, 
-    LINEAR_NONZERO        
+    NEAREST,
+    LINEAR,
+    LINEAR_VALID,
+    LINEAR_NONZERO
 };
 
 } // cuimage
 
-using cuimage::VisType;
 using cuimage::ResizeMode;
+using cuimage::VisType;

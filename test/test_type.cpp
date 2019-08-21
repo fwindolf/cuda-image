@@ -1,9 +1,8 @@
-#include <gtest/gtest.h>
-
 #include "cuimage/cuda/type.h"
 
-using namespace cuimage;
+#include <gtest/gtest.h>
 
+using namespace cuimage;
 
 TEST(FloatTypeTest, is_float_with_channels)
 {
@@ -64,7 +63,6 @@ TEST(UcharTypeTest, is_not_other_type)
     EXPECT_FALSE(is_int<uchar3>());
     EXPECT_FALSE(is_int<uchar4>());
 }
-
 
 TEST(IntTypeTest, is_int_with_channels)
 {

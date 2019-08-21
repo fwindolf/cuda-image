@@ -15,8 +15,7 @@ FileWriter<T>::FileWriter(
  * TODO: Add less dirty version of re-scaling
  */
 
-template <> 
-inline bool FileWriter<float>::write(float* data)
+template <> inline bool FileWriter<float>::write(float* data)
 {
     cv::Mat img(height_, width_, CV_32FC1, data);
     if (type_ == "png" || type_ == "jpg")
@@ -25,8 +24,7 @@ inline bool FileWriter<float>::write(float* data)
     return cv::imwrite(fileName_, img);
 }
 
-template <>
-inline bool FileWriter<float3>::write(float3*  data)
+template <> inline bool FileWriter<float3>::write(float3* data)
 {
     cv::Mat img(height_, width_, CV_32FC3, data);
     if (type_ == "png" || type_ == "jpg")
@@ -35,22 +33,19 @@ inline bool FileWriter<float3>::write(float3*  data)
     return cv::imwrite(fileName_, img);
 }
 
-template <> 
-inline bool FileWriter<uchar>::write(uchar* data)
+template <> inline bool FileWriter<uchar>::write(uchar* data)
 {
     cv::Mat img(height_, width_, CV_8UC1, data);
     return cv::imwrite(fileName_, img);
 }
 
-template <>
-inline bool FileWriter<uchar3>::write(uchar3* data)
+template <> inline bool FileWriter<uchar3>::write(uchar3* data)
 {
     cv::Mat img(height_, width_, CV_8UC3, data);
     return cv::imwrite(fileName_, img);
 }
 
-template <>
-inline bool FileWriter<uchar4>::write(uchar4* data)
+template <> inline bool FileWriter<uchar4>::write(uchar4* data)
 {
     cv::Mat img(height_, width_, CV_8UC4, data);
     return cv::imwrite(fileName_, img);

@@ -19,8 +19,7 @@ namespace cuimage
  * @class FileReader
  * @brief Read images from file
  */
-template <typename T>
-class FileReader : public File
+template <typename T> class FileReader : public File
 {
 public:
     ~FileReader(){};

@@ -5,8 +5,8 @@
  */
 #pragma once
 
-#include "cuimage/cuda/devptr.h"
 #include "cuimage/cuda/conversion.h"
+#include "cuimage/cuda/devptr.h"
 
 namespace cuimage
 {
@@ -24,6 +24,7 @@ template <typename T, typename TO>
 void cu_Convert(DevPtr<TO> output, const DevPtr<T>& input);
 
 template <typename T, typename TO>
-void cu_GetComponent(DevPtr<TO> output, const DevPtr<T>& input, const ushort component);
+void cu_GetComponent(
+    DevPtr<TO> output, const DevPtr<T>& input, const ushort component);
 
 } // image

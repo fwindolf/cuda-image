@@ -1,11 +1,13 @@
 
 template <typename T, typename TO>
-bool copyToArray(const T* data, cudaArray_t array, const size_t w, const size_t h, const float fillWith = 1.f)
+bool copyToArray(const T* data, cudaArray_t array, const size_t w,
+    const size_t h, const float fillWith = 1.f)
 {
     cudaError_t status;
     if (std::is_same<T, TO>())
     {
-        status = cudaMemcpyToArray(array, 0, 0, data, w * h * sizeof(TO), cudaMemcpyDeviceToDevice);
+        status = cudaMemcpyToArray(
+            array, 0, 0, data, w * h * sizeof(TO), cudaMemcpyDeviceToDevice);
         return (status == cudaSuccess);
     }
 
@@ -23,7 +25,8 @@ bool copyToArray(const T* data, cudaArray_t array, const size_t w, const size_t 
         return false;
 
     // Copy every element with pitch (width is 1 element, height is w * h)
-    status = cudaMemcpy2D(tmp, sizeof(TO), data, sizeof(T), sizeof(T), w * h, cudaMemcpyDeviceToDevice);
+    status = cudaMemcpy2D(tmp, sizeof(TO), data, sizeof(T), sizeof(T), w * h,
+        cudaMemcpyDeviceToDevice);
     if (status != cudaSuccess)
         return false;
 

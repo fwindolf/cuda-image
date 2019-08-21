@@ -1,5 +1,4 @@
-template <typename T> 
-inline DevPtr<T> FileReader<T>::upload(cv::Mat& image)
+template <typename T> inline DevPtr<T> FileReader<T>::upload(cv::Mat& image)
 {
     assert(image.isContinuous());
     assert(image.elemSize() == sizeof(T));
@@ -17,7 +16,7 @@ inline DevPtr<T> FileReader<T>::upload(cv::Mat& image)
  * - uchar, uchar3, uchar4
  */
 
-template <> 
+template <>
 inline DevPtr<float> FileReader<float>::read(const std::string& fileName)
 {
     auto type = fileName.substr(fileName.find(".") + 1);
@@ -28,12 +27,13 @@ inline DevPtr<float> FileReader<float>::read(const std::string& fileName)
         img = cv::imread(fileName, cv::IMREAD_GRAYSCALE | cv::IMREAD_ANYDEPTH);
 
     if (img.empty())
-        throw std::runtime_error("Could not open image " + fileName + " or image is empty!");
+        throw std::runtime_error(
+            "Could not open image " + fileName + " or image is empty!");
 
     // Make float
     img.convertTo(img, CV_32FC1);
-    
-    // Estimate range and normalize 
+
+    // Estimate range and normalize
     double minv, maxv;
     cv::minMaxIdx(img, &minv, &maxv);
     if (minv >= 0 && maxv > 1 && maxv <= 255)
@@ -47,7 +47,8 @@ inline DevPtr<float3> FileReader<float3>::read(const std::string& fileName)
 {
     cv::Mat img = cv::imread(fileName, cv::IMREAD_COLOR | cv::IMREAD_ANYDEPTH);
     if (img.empty())
-        throw std::runtime_error("Could not open image " + fileName + " or image is empty!");
+        throw std::runtime_error(
+            "Could not open image " + fileName + " or image is empty!");
 
     img.convertTo(img, CV_32FC3);
 
@@ -60,12 +61,13 @@ inline DevPtr<float3> FileReader<float3>::read(const std::string& fileName)
     return upload(img);
 }
 
-template <> 
+template <>
 inline DevPtr<uchar> FileReader<uchar>::read(const std::string& fileName)
 {
     cv::Mat img = cv::imread(fileName, cv::IMREAD_GRAYSCALE);
     if (img.empty())
-        throw std::runtime_error("Could not open image " + fileName + " or image is empty!");
+        throw std::runtime_error(
+            "Could not open image " + fileName + " or image is empty!");
 
     img.convertTo(img, CV_8UC1);
     return upload(img);
@@ -76,7 +78,8 @@ inline DevPtr<uchar3> FileReader<uchar3>::read(const std::string& fileName)
 {
     cv::Mat img = cv::imread(fileName, cv::IMREAD_COLOR);
     if (img.empty())
-        throw std::runtime_error("Could not open image " + fileName + " or image is empty!");
+        throw std::runtime_error(
+            "Could not open image " + fileName + " or image is empty!");
 
     img.convertTo(img, CV_8UC3);
     return upload(img);
@@ -87,8 +90,9 @@ inline DevPtr<uchar4> FileReader<uchar4>::read(const std::string& fileName)
 {
     cv::Mat img = cv::imread(fileName, cv::IMREAD_COLOR);
     if (img.empty())
-        throw std::runtime_error("Could not open image " + fileName + " or image is empty!");
-        
+        throw std::runtime_error(
+            "Could not open image " + fileName + " or image is empty!");
+
     img.convertTo(img, CV_8UC3);
     cv::cvtColor(img, img, cv::COLOR_BGR2RGBA);
     return upload(img);

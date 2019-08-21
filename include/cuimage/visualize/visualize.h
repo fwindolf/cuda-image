@@ -5,9 +5,16 @@
  */
 #pragma once
 
-#include <mutex>
+#include "cuimage/cuda.h"
+#include "cuimage/operations/math_cu.h"
+#include "kernels.h"
+#include "shaders/ambient.h"
+#include "shaders/default.h"
+#include "types.h"
+
 #include <atomic>
 #include <condition_variable>
+#include <mutex>
 #include <thread>
 
 #include <pangolin/pangolin.h>
@@ -15,13 +22,6 @@
 #include <pangolin/gl/glvbo.h>
 #include <cuda_gl_interop.h>
 
-#include "cuimage/cuda.h"
-#include "cuimage/operations/math_cu.h"
-
-#include "types.h"
-#include "shaders/default.h"
-#include "shaders/ambient.h"
-#include "kernels.h"
 
 namespace cuimage
 {
@@ -40,7 +40,7 @@ public:
      * Create the window that binds to this context
      */
     virtual void create() = 0;
-    
+
     /**
      * Show the data in the associated window
      * If wait is set, execution will halt until user input
@@ -65,7 +65,7 @@ public:
 
 /**
  * @class VisualizerBase
- * @brief Stores common data members 
+ * @brief Stores common data members
  * Needed for GlTexture which cannot be accessed in specialization otherways
  */
 class VisualizerBase : public Visualizer
@@ -77,7 +77,8 @@ public:
 
     virtual void create() override;
 
-    virtual void show(void* data, const size_t dataSize, bool wait = true) override;
+    virtual void show(
+        void* data, const size_t dataSize, bool wait = true) override;
 
     virtual void close(bool force = false) override;
 
@@ -90,11 +91,11 @@ private:
 
     void initialize();
 
-    void upload(void* data, const size_t dataSize);    
+    void upload(void* data, const size_t dataSize);
 
     void deinitialize();
 
-protected: 
+protected:
     // All child class hooks are called within opengl context
 
     virtual bool initContext_();
@@ -106,14 +107,14 @@ protected:
     virtual bool copyToTexture_();
 
     virtual void render_();
-    
+
     const size_t w_, h_;
     const std::string name_;
-    
+
     bool contextInitialized_;
-    
+
     std::atomic<bool> running_;
-    
+
     std::atomic<bool> quit_;
     std::atomic<bool> waitUserAction_;
 
@@ -141,8 +142,7 @@ protected:
  * @class TypedVisualizer
  * @brief Show images in a certain way
  */
-template <VisType T>
-class TypedVisualizer : public VisualizerBase
+template <VisType T> class TypedVisualizer : public VisualizerBase
 {
 public:
     TypedVisualizer(const std::string& name, const size_t w, const size_t h);
@@ -164,10 +164,10 @@ protected:
 };
 
 #include "visualizers/copy_impl.h"
+
 #include "visualizers/color_type_impl.h"
 #include "visualizers/depth_type_impl.h"
 #include "visualizers/depth_with_gradients_impl.h"
 #include "visualizers/normals_impl.h"
-
 
 } // image

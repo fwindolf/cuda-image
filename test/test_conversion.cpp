@@ -1,9 +1,8 @@
-#include <gtest/gtest.h>
-
 #include "cuimage/cuda/conversion.h"
 
-using namespace cuimage;
+#include <gtest/gtest.h>
 
+using namespace cuimage;
 
 TEST(RgbaToGrayTest, works_float)
 {
@@ -64,7 +63,7 @@ TEST(RgbToGrayTest, works_uchar)
     uchar3 c1 = make_uchar3(255, 255, 255);
     uchar3 c2 = make_uchar3(0, 0, 0);
     uchar3 c3 = make_uchar3(100, 200, 150);
-    
+
     EXPECT_FLOAT_EQ(255, rgb2gray(c1));
     EXPECT_FLOAT_EQ(0, rgb2gray(c2));
     EXPECT_GT(rgb2gray(c3), 0);
@@ -82,7 +81,6 @@ TEST(RgbToGrayTest, works_int)
     EXPECT_GT(rgb2gray(c3), 0);
     EXPECT_LT(rgb2gray(c3), 255);
 }
-
 
 TEST(RgbaToRgbTest, works_float)
 {
@@ -111,7 +109,6 @@ TEST(RgbaToRgbTest, works_float)
     EXPECT_FLOAT_EQ(c4.y, r4.y);
     EXPECT_FLOAT_EQ(c4.z, r4.z);
 }
-
 
 TEST(RgbaToRgbTest, works_uchar)
 {
@@ -193,8 +190,6 @@ TEST(RgbToRgbaTest, works_float)
     EXPECT_FLOAT_EQ(c3.z, r3.z);
     EXPECT_FLOAT_EQ(1.f, r3.w);
 }
-
-
 
 TEST(RgbToRgbaTest, works_uchar)
 {

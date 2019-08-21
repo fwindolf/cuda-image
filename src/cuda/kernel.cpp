@@ -7,10 +7,7 @@
 /**
  * Block / Grid Helpers
  */
-dim3 block2D(const int blockSize)
-{
-    return dim3(blockSize, blockSize);
-}
+dim3 block2D(const int blockSize) { return dim3(blockSize, blockSize); }
 
 dim3 block2D(const int blockSizeX, const int blockSizeY)
 {
@@ -26,8 +23,8 @@ dim3 grid2D(const size_t width, const size_t height, dim3& block)
 {
     assert(block.x * block.y * block.z <= 1024);
 
-    auto grid = dim3((width  + block.x - 1) / block.x, 
-                     (height + block.y - 1) / block.y);
+    auto grid = dim3(
+        (width + block.x - 1) / block.x, (height + block.y - 1) / block.y);
 
     // Prevent grid overflow by adapting block sizes
     if (grid.x >= MAX_GRID_SIZE)
@@ -36,7 +33,7 @@ dim3 grid2D(const size_t width, const size_t height, dim3& block)
         block.y /= 2;
         return grid2D(width, height, block);
     }
-    
+
     if (grid.y >= MAX_GRID_SIZE)
     {
         block.y *= 2;
@@ -47,13 +44,13 @@ dim3 grid2D(const size_t width, const size_t height, dim3& block)
     return grid;
 }
 
-dim3 grid3D(const size_t width, const size_t height, const size_t channels, dim3& block)
+dim3 grid3D(const size_t width, const size_t height, const size_t channels,
+    dim3& block)
 {
     assert(block.x * block.y * block.z <= 1024);
 
-    auto grid = dim3((width  + block.x - 1) / block.x, 
-                     (height + block.y - 1) / block.y, 
-                     (channels  + block.z - 1) / block.z);
+    auto grid = dim3((width + block.x - 1) / block.x,
+        (height + block.y - 1) / block.y, (channels + block.z - 1) / block.z);
 
     // Prevent grid overflow by adapting block sizes
     if (grid.x >= MAX_GRID_SIZE)
@@ -62,7 +59,7 @@ dim3 grid3D(const size_t width, const size_t height, const size_t channels, dim3
         block.y /= 2;
         return grid2D(width, height, block);
     }
-    
+
     if (grid.y >= MAX_GRID_SIZE)
     {
         block.y *= 2;
@@ -75,6 +72,6 @@ dim3 grid3D(const size_t width, const size_t height, const size_t channels, dim3
         block.z *= 2;
         return grid2D(width, height, block);
     }
-    
+
     return grid;
 }

@@ -5,11 +5,11 @@
  */
 #pragma once
 
-#include <string>
+#include "cuimage/file/file.h"
+
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
-
-#include "cuimage/file/file.h"
+#include <string>
 
 namespace cuimage
 {
@@ -18,8 +18,7 @@ namespace cuimage
  * @class FileWriter
  * @brief Write images to  file
  */
-template <typename T>
-class FileWriter : public File
+template <typename T> class FileWriter : public File
 {
 public:
     FileWriter(const std::string& fileName, const int width, const int height);
@@ -27,6 +26,7 @@ public:
     ~FileWriter(){};
 
     bool write(T* data);
+
 private:
     const std::string fileName_;
     const int width_, height_;

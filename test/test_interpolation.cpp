@@ -1,9 +1,8 @@
-#include <gtest/gtest.h>
-
 #include "cuimage/cuda/interpolation.h"
 
-using namespace cuimage;
+#include <gtest/gtest.h>
 
+using namespace cuimage;
 
 TEST(InterpolationLinearTest, returns_interpolated_value_in_range)
 {
@@ -12,11 +11,12 @@ TEST(InterpolationLinearTest, returns_interpolated_value_in_range)
 
     int pm = 0, pp = 1;
 
-    float px[11] = {.0f, .1f, .2f, .3f, .4f, .5f, .6f, .7f, .8f, .9f, 1.f };
+    float px[11] = {.0f, .1f, .2f, .3f, .4f, .5f, .6f, .7f, .8f, .9f, 1.f};
 
     // interpolated value is on linear function between 0 - 1
     for (int i = 0; i < 11; i++)
-        EXPECT_FLOAT_EQ(px[i], d_interpolate_linear(v1, v2, 1, 1, pm, pp, px[i]));
+        EXPECT_FLOAT_EQ(
+            px[i], d_interpolate_linear(v1, v2, 1, 1, pm, pp, px[i]));
 }
 
 TEST(InterpolationLinearTest, works_for_large_range)
@@ -30,9 +30,9 @@ TEST(InterpolationLinearTest, works_for_large_range)
 
     // interpolated value is on linear function between 0 - 1
     for (int i = 0; i < 6; i++)
-        EXPECT_FLOAT_EQ(px[i] / 100.f, d_interpolate_linear(v1, v2, 1, 1, pm, pp, px[i]));
+        EXPECT_FLOAT_EQ(
+            px[i] / 100.f, d_interpolate_linear(v1, v2, 1, 1, pm, pp, px[i]));
 }
-
 
 TEST(InterpolationLinearTest, works_for_uchar)
 {
@@ -54,7 +54,7 @@ TEST(InterpolationLinearTest, works_for_float_vector_types)
 
     int pm = 0, pp = 1;
     float px = 0.5f;
-    
+
     float3 res = d_interpolate_linear(v1, v2, 1, 1, pm, pp, px);
     float3 exp = make_float3(0.5f, 0.5f, -0.5f);
 
@@ -70,8 +70,8 @@ TEST(InterpolationLinearTest, works_for_uchar_vector_types)
 
     int pm = 0, pp = 1;
     float px = 0.5f;
-    
-    uchar4 res = d_interpolate_linear(v1, v2, 1, 1,  pm, pp, px);
+
+    uchar4 res = d_interpolate_linear(v1, v2, 1, 1, pm, pp, px);
     uchar4 exp = make_uchar4(25, 25, 125, 175);
 
     EXPECT_FLOAT_EQ(exp.x, res.x);
@@ -80,7 +80,6 @@ TEST(InterpolationLinearTest, works_for_uchar_vector_types)
     EXPECT_FLOAT_EQ(exp.w, res.w);
 }
 
-
 TEST(InterpolationLinearTest, works_for_int_vector_types)
 {
     int2 v1 = make_int2(0, 10);
@@ -88,7 +87,7 @@ TEST(InterpolationLinearTest, works_for_int_vector_types)
 
     int pm = 0, pp = 1;
     float px = 0.5f;
-    
+
     int2 res = d_interpolate_linear(v1, v2, 1, 1, pm, pp, px);
     int2 exp = make_int2(25, 5);
 
