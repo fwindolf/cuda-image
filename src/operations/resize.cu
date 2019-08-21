@@ -250,7 +250,9 @@ void cu_ResizeNearest(DevPtr<T> output, const DevPtr<T>& input)
     g_ResizeNearest<<<grid, block>>>(output, input);
 
     cudaCheckLastCall();
-    cudaDeviceSynchronize();
+#ifndef DNDEBUG
+    cudaSafeCall(cudaDeviceSynchronize());
+#endif
 }
 
 template <typename T>
@@ -263,7 +265,9 @@ void cu_ResizeNearest(
     g_ResizeNearest<<<grid, block>>>(output, input, mask);
 
     cudaCheckLastCall();
-    cudaDeviceSynchronize();
+#ifndef DNDEBUG
+    cudaSafeCall(cudaDeviceSynchronize());
+#endif
 }
 
 template <typename T>
@@ -275,7 +279,9 @@ void cu_ResizeLinear(DevPtr<T> output, const DevPtr<T>& input)
     g_ResizeLinear<<<grid, block>>>(output, input);
 
     cudaCheckLastCall();
-    cudaDeviceSynchronize();
+#ifndef DNDEBUG
+    cudaSafeCall(cudaDeviceSynchronize());
+#endif
 }
 
 template <typename T>
@@ -291,7 +297,9 @@ void cu_ResizeLinear(
     g_ResizeLinear<<<grid, block>>>(output, input, mask);
 
     cudaCheckLastCall();
+#ifndef DNDEBUG
     cudaSafeCall(cudaDeviceSynchronize());
+#endif
 }
 
 template <typename T>
@@ -306,7 +314,9 @@ void cu_ResizeLinearValid(DevPtr<T> output, const DevPtr<T>& input)
     g_ResizeLinearValid<<<grid, block>>>(output, input);
 
     cudaCheckLastCall();
+#ifndef DNDEBUG
     cudaSafeCall(cudaDeviceSynchronize());
+#endif
 }
 
 template <typename T>
@@ -322,7 +332,9 @@ void cu_ResizeLinearValid(
     g_ResizeLinearValid<<<grid, block>>>(output, input, mask);
 
     cudaCheckLastCall();
+#ifndef DNDEBUG
     cudaSafeCall(cudaDeviceSynchronize());
+#endif
 }
 
 template <typename T>
@@ -338,7 +350,9 @@ void cu_ResizeLinearNonZero(
     g_ResizeLinearNonZero<<<grid, block>>>(output, input, mask);
 
     cudaCheckLastCall();
+#ifndef DNDEBUG
     cudaSafeCall(cudaDeviceSynchronize());
+#endif
 }
 
 template <typename T>
@@ -353,7 +367,9 @@ void cu_ApplyMask(DevPtr<T> image, const DevPtr<uchar>& mask)
     g_applyMask<<<grid, block>>>(image, mask);
 
     cudaCheckLastCall();
+#ifndef DNDEBUG
     cudaSafeCall(cudaDeviceSynchronize());
+#endif
 }
 
 #define DECLARE_RESIZE_FUNCTION(type, function)                               \

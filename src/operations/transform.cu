@@ -1,11 +1,9 @@
-#include "cuimage/operations/transform_cu.h"
-
-#include "cuimage/cuda/utils.h"
 #include "cuimage/cuda/arithmetic.h"
-#include "cuimage/cuda/kernel.h"
 #include "cuimage/cuda/devptr.h"
-
+#include "cuimage/cuda/kernel.h"
+#include "cuimage/cuda/utils.h"
 #include "cuimage/operations/reduce_cu.h"
+#include "cuimage/operations/transform_cu.h"
 
 #include <nvfunctional>
 
@@ -17,7 +15,7 @@ __global__ void g_Transform(DevPtr<T> image, Op operation)
 {
     const dim3 pos = getPos(blockIdx, blockDim, threadIdx);
 
-    if(pos.x >= image.width || pos.y >= image.height)
+    if (pos.x >= image.width || pos.y >= image.height)
         return;
 
     T& pxl = image(pos.x, pos.y);
@@ -30,27 +28,32 @@ void cu_Transform(DevPtr<T>& image, Op operation)
     dim3 block = block2D(32);
     dim3 grid = grid2D(image.width, image.height, block);
 
-    g_Transform <<< grid, block >>> (image, operation);
+    g_Transform<<<grid, block>>>(image, operation);
 
     cudaCheckLastCall();
-    cudaDeviceSynchronize();
+#ifndef DNDEBUG
+    cudaSafeCall(cudaDeviceSynchronize());
+#endif
 }
 
-template <typename T>
-struct ReplaceValue
+template <typename T> struct ReplaceValue
 {
-    ReplaceValue(const T& val, const T& with) 
-    : val_(val), with_(with) {}
+    ReplaceValue(const T& val, const T& with)
+        : val_(val)
+        , with_(with)
+    {
+    }
 
-    // Return a function ptr from lambda that replaces the pixel with with_ if it is val_
+    // Return a function ptr from lambda that replaces the pixel with with_ if
+    // it is val_
     nvstd::function<void(T&)> __device__ getOp()
     {
-        return [*this] __device__ (T& v) 
-        {
-            if (v == val_)            
-                v = with_;  
+        return [*this] __device__(T & v) {
+            if (v == val_)
+                v = with_;
         };
     }
+
 private:
     const T val_, with_;
 };
@@ -65,72 +68,73 @@ void cu_Replace(DevPtr<T> image, const T& value, const T& with)
     cu_Transform(image, replace_op);
 }
 
-template <typename T>
-struct ReplaceNan
+template <typename T> struct ReplaceNan
 {
-    ReplaceNan(const T& with) 
-    : with_(with) {}
+    ReplaceNan(const T& with)
+        : with_(with)
+    {
+    }
 
-    // Return a function ptr from lambda that replaces the pixel with with_ if it is val_
+    // Return a function ptr from lambda that replaces the pixel with with_ if
+    // it is val_
     nvstd::function<void(T&)> __device__ getOp()
     {
-        return [*this] __device__ (T& v) 
-        {
+        return [*this] __device__(T & v) {
             if (isnan(v))
                 v = with_;
         };
     }
+
 private:
     const T with_;
 };
 
-template <typename T>
-void cu_ReplaceNan(DevPtr<T> image, const T& with)
+template <typename T> void cu_ReplaceNan(DevPtr<T> image, const T& with)
 {
     ReplaceNan<T> replace_op(with);
     cu_Transform(image, replace_op);
 }
 
-template <typename T>
-struct SetValue
+template <typename T> struct SetValue
 {
     SetValue(const T& val)
-     : val_(val) {}
+        : val_(val)
+    {
+    }
 
     // Return a function ptr from lambda that sets the pixel to value
     nvstd::function<void(T&)> __device__ getOp()
     {
-        return [*this] __device__ (T& v) 
-        {
-            v = val_;
-        };
+        return [*this] __device__(T & v) { v = val_; };
     }
+
 private:
     const T val_;
 };
 
-template <typename T>
-void cu_SetTo(DevPtr<T> image, const T& value)
+template <typename T> void cu_SetTo(DevPtr<T> image, const T& value)
 {
     SetValue<T> set_op(value);
     cu_Transform(image, set_op);
 }
 
-template <typename T>
-struct Threshold
+template <typename T> struct Threshold
 {
     Threshold(const T& threshold, const T& val)
-     : thres_(threshold), val_(val) {}
+        : thres_(threshold)
+        , val_(val)
+    {
+    }
 
     // Return a function ptr from lambda that sets the pixel to value
     nvstd::function<void(T&)> __device__ getOp()
     {
-        return [*this] __device__ (T& v) 
-        {
+        return [*this] __device__(T & v) {
             if (v > thres_)
                 v = val_;
         };
     }
+
 private:
     const T thres_, val_;
 };
@@ -142,21 +146,23 @@ void cu_Threshold(DevPtr<T> image, const T& threshold, const T& value)
     cu_Transform(image, thres_op);
 }
 
-template <typename T>
-struct ThresholdInv
+template <typename T> struct ThresholdInv
 {
     ThresholdInv(const T& threshold, const T& val)
-     : thres_(threshold), val_(val) {}
+        : thres_(threshold)
+        , val_(val)
+    {
+    }
 
     // Return a function ptr from lambda that sets the pixel to value
     nvstd::function<void(T&)> __device__ getOp()
     {
-        return [*this] __device__ (T& v) 
-        {
+        return [*this] __device__(T & v) {
             if (v <= thres_)
                 v = val_;
         };
     }
+
 private:
     const T thres_, val_;
 };
@@ -168,97 +174,91 @@ void cu_ThresholdInv(DevPtr<T> image, const T& threshold, const T& value)
     cu_Transform(image, thres_op);
 }
 
-template <typename T>
-struct ThresholdLowHigh
+template <typename T> struct ThresholdLowHigh
 {
     ThresholdLowHigh(const T& threshold, const T& low, const T& high)
-     : thres_(threshold), low_(low), high_(high) {}
+        : thres_(threshold)
+        , low_(low)
+        , high_(high)
+    {
+    }
 
     // Return a function ptr from lambda that sets the pixel to value
     nvstd::function<void(T&)> __device__ getOp()
     {
-        return [*this] __device__ (T& v) 
-        {
+        return [*this] __device__(T & v) {
             if (v >= thres_)
                 v = high_;
             else
                 v = low_;
         };
     }
+
 private:
     const T thres_, low_, high_;
 };
 
 template <typename T>
-void cu_Threshold(DevPtr<T> image, const T& threshold, const T& low, const T& high)
+void cu_Threshold(
+    DevPtr<T> image, const T& threshold, const T& low, const T& high)
 {
     ThresholdLowHigh<T> thres_op(threshold, low, high);
     cu_Transform(image, thres_op);
 }
 
-template <typename T>
-struct Absolute
+template <typename T> struct Absolute
 {
     // Return a function ptr from lambda that sets the pixel to value
     nvstd::function<void(T&)> __device__ getOp()
     {
-        return [*this] __device__ (T& v) 
-        {
-            v = abs(v);
-        };
+        return [*this] __device__(T & v) { v = abs(v); };
     }
 };
 
-
-template <typename T>
-void cu_Abs(DevPtr<T> image)
+template <typename T> void cu_Abs(DevPtr<T> image)
 {
     Absolute<T> abs_op;
     cu_Transform(image, abs_op);
 }
 
-template <typename T>
-struct Square
+template <typename T> struct Square
 {
     // Return a function ptr from lambda that sets the pixel to value
     nvstd::function<void(T&)> __device__ getOp()
     {
-        return [*this] __device__ (T& v) 
-        {
-            v *= v;
-        };
+        return [*this] __device__(T & v) { v *= v; };
     }
 };
 
-
-template <typename T>
-void cu_Square(DevPtr<T> image)
+template <typename T> void cu_Square(DevPtr<T> image)
 {
     Square<T> square_op;
     cu_Transform(image, square_op);
 }
 
-template <typename T, typename std::enable_if<has_0_channels<T>::value, T>::type* = nullptr>
+template <typename T,
+    typename std::enable_if<has_0_channels<T>::value, T>::type* = nullptr>
 struct MedianOp
 {
-    MedianOp(const T& minv, const T& maxv, int* data, const size_t& numBuckets, const float& bucketSize)
-     : minv_(minv), 
-       maxv_(maxv),
-       buckets_(data),
-       numBuckets_(numBuckets),
-       bucketSize_(bucketSize)
+    MedianOp(const T& minv, const T& maxv, int* data, const size_t& numBuckets,
+        const float& bucketSize)
+        : minv_(minv)
+        , maxv_(maxv)
+        , buckets_(data)
+        , numBuckets_(numBuckets)
+        , bucketSize_(bucketSize)
     {
     }
 
     nvstd::function<void(T&)> __device__ getOp()
     {
-        return [*this] __device__ (T& v)
-        {
+        return [*this] __device__(T & v) {
             // Add the element to the correct bucket
             const size_t idx = static_cast<size_t>((v - minv_) / bucketSize_);
             atomicAdd(&buckets_[idx], 1);
         };
     }
+
 private:
     T minv_, maxv_;
     size_t numBuckets_;
@@ -266,8 +266,7 @@ private:
     int* buckets_;
 };
 
-template <typename T>
-T cu_Median(DevPtr<T> image)
+template <typename T> T cu_Median(DevPtr<T> image)
 {
     // Find dimensions for bucket
     T minv = cu_Min(image);
@@ -281,17 +280,18 @@ T cu_Median(DevPtr<T> image)
 
     // Fill buckets
     MedianOp<T> medianOp(minv, maxv, buckets.data, numBuckets, bucketSize);
-    cu_Transform(image, medianOp);  
-    
+    cu_Transform(image, medianOp);
+
     // Transfer to CPU
     int* h_buckets = new int[numBuckets]();
-    cudaSafeCall(cudaMemcpy(h_buckets, buckets.data, numBuckets * sizeof(int), cudaMemcpyDeviceToHost));
+    cudaSafeCall(cudaMemcpy(h_buckets, buckets.data, numBuckets * sizeof(int),
+        cudaMemcpyDeviceToHost));
     cudaSafeCall(cudaFree(buckets.data));
-    
+
     // Add until at least half of pixels in buckets -> median
     int i = 0;
     size_t sum = 0;
-    while(sum < (image.width * image.height) / 2)
+    while (sum < (image.width * image.height) / 2)
     {
         sum += h_buckets[i];
         i++;
@@ -299,14 +299,11 @@ T cu_Median(DevPtr<T> image)
     return static_cast<T>(minv + (i - 1) * bucketSize);
 }
 
-
-
-
 /**
  * Explicit template instantiation
  */
 
-#define DECLARE_TRANSFORM_FUNCTION(type, operation) \
+#define DECLARE_TRANSFORM_FUNCTION(type, operation)                           \
     template void cu_Transform(DevPtr<type>&, operation<type>);
 
 FOR_EACH_TYPE(DECLARE_TRANSFORM_FUNCTION, SetValue)
@@ -318,36 +315,33 @@ FOR_EACH_TYPE(DECLARE_TRANSFORM_FUNCTION, ThresholdLowHigh)
 FOR_EACH_TYPE(DECLARE_TRANSFORM_FUNCTION, Absolute)
 FOR_EACH_TYPE(DECLARE_TRANSFORM_FUNCTION, Square)
 
-#define DECLARE_SET_FUNCTION(type, name) \
+#define DECLARE_SET_FUNCTION(type, name)                                      \
     template void name(DevPtr<type>, const type&);
 
 FOR_EACH_TYPE(DECLARE_SET_FUNCTION, cu_SetTo)
 FOR_EACH_TYPE(DECLARE_SET_FUNCTION, cu_ReplaceNan)
 
-#define DECLARE_REPLACE_FUNCTION(type, name) \
+#define DECLARE_REPLACE_FUNCTION(type, name)                                  \
     template void name(DevPtr<type>, const type&, const type&);
 
 FOR_EACH_TYPE(DECLARE_REPLACE_FUNCTION, cu_Replace)
 FOR_EACH_TYPE(DECLARE_REPLACE_FUNCTION, cu_Threshold)
 FOR_EACH_TYPE(DECLARE_REPLACE_FUNCTION, cu_ThresholdInv)
 
-#define DECLARE_THRESHOLD_FUNCTION(type, name) \
+#define DECLARE_THRESHOLD_FUNCTION(type, name)                                \
     template void name(DevPtr<type>, const type&, const type&, const type&);
 
 FOR_EACH_TYPE(DECLARE_THRESHOLD_FUNCTION, cu_Threshold)
 
-#define DECLARE_MODIFYING_FUNCTION(type, name) \
+#define DECLARE_MODIFYING_FUNCTION(type, name)                                \
     template void name(DevPtr<type>);
 
 FOR_EACH_TYPE(DECLARE_MODIFYING_FUNCTION, cu_Abs)
 FOR_EACH_TYPE(DECLARE_MODIFYING_FUNCTION, cu_Square)
 
-
-#define DECLARE_MEDIAN_FUNCTION(type, name) \
-    template type name(DevPtr<type>);
+#define DECLARE_MEDIAN_FUNCTION(type, name) template type name(DevPtr<type>);
 
 FOR_EACH_0CHANNEL_TYPE(DECLARE_TRANSFORM_FUNCTION, MedianOp)
 FOR_EACH_0CHANNEL_TYPE(DECLARE_MEDIAN_FUNCTION, cu_Median)
-
 
 } // image
