@@ -122,7 +122,7 @@ void cu_GrayToColor(DevPtr<TO> output, const DevPtr<T>& input)
     g_GrayToColor<T, TO><<<grid, block>>>(output, input);
 
     cudaCheckLastCall();
-#ifndef DNDEBUG
+#ifdef DEBUG
     cudaSafeCall(cudaDeviceSynchronize());
 #endif
 }
@@ -139,7 +139,7 @@ void cu_ColorToGray(DevPtr<TO> output, const DevPtr<T>& input)
     g_ColorToGray<T, TO><<<grid, block>>>(output, input);
 
     cudaCheckLastCall();
-#ifndef DNDEBUG
+#ifdef DEBUG
     cudaSafeCall(cudaDeviceSynchronize());
 #endif
 }
@@ -156,7 +156,7 @@ void cu_ColorToColor(DevPtr<TO> output, const DevPtr<T>& input)
     g_ColorToColor<T, TO><<<grid, block>>>(output, input);
 
     cudaCheckLastCall();
-#ifndef DNDEBUG
+#ifdef DEBUG
     cudaSafeCall(cudaDeviceSynchronize());
 #endif
 }
@@ -173,7 +173,7 @@ void cu_Convert(DevPtr<TO> output, const DevPtr<T>& input)
     g_Convert<T, TO><<<grid, block>>>(output, input);
 
     cudaCheckLastCall();
-#ifndef DNDEBUG
+#ifdef DEBUG
     cudaSafeCall(cudaDeviceSynchronize());
 #endif
 }
@@ -191,7 +191,7 @@ void cu_GetComponent(
     g_GetComponent<T, TO><<<grid, block>>>(output, input, component);
 
     cudaCheckLastCall();
-#ifndef DNDEBUG
+#ifdef DEBUG
     cudaSafeCall(cudaDeviceSynchronize());
 #endif
 }

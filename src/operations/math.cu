@@ -43,7 +43,7 @@ void cu_Apply(DevPtr<T> input1, const DevPtr<T> input2, Op operation)
     g_Apply<<<grid, block>>>(input1, input2, operation);
 
     cudaCheckLastCall();
-#ifndef DNDEBUG
+#ifdef DEBUG
     cudaSafeCall(cudaDeviceSynchronize());
 #endif
 }
@@ -56,7 +56,7 @@ template <typename T, typename Op> void cu_Apply(DevPtr<T> input, Op operation)
     g_Apply<<<grid, block>>>(input, operation);
 
     cudaCheckLastCall();
-#ifndef DNDEBUG
+#ifdef DEBUG
     cudaSafeCall(cudaDeviceSynchronize());
 #endif
 }

@@ -177,7 +177,7 @@ void cu_VerticesFromDepth(DevPtr<float4>& vertices, const DevPtr<float>& depth,
     g_VerticesFromDepth<<<grid, block>>>(vertices, depth, fx, fy, cx, cy);
 
     cudaCheckLastCall();
-#ifndef DNDEBUG
+#ifdef DEBUG
     cudaSafeCall(cudaDeviceSynchronize());
 #endif
 }
@@ -193,7 +193,7 @@ void cu_VerticesFromDepthGradients(DevPtr<float4>& vertices,
         vertices, depth_gradients, fx, fy, cx, cy);
 
     cudaCheckLastCall();
-#ifndef DNDEBUG
+#ifdef DEBUG
     cudaSafeCall(cudaDeviceSynchronize());
 #endif
 }
@@ -207,7 +207,7 @@ void cu_VertexIndices(DevPtr<uint>& indices, const DevPtr<T>& data)
     g_VertexIndicesTriangles<T><<<grid, block>>>(indices, data);
 
     cudaCheckLastCall();
-#ifndef DNDEBUG
+#ifdef DEBUG
     cudaSafeCall(cudaDeviceSynchronize());
 #endif
 }

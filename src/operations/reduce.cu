@@ -73,7 +73,7 @@ template <typename T, typename Op> T cu_Reduce(DevPtr<T> image, Op operation)
             idata, odata, m, operation);
 
         cudaCheckLastCall();
-#ifndef DNDEBUG
+#ifdef DEBUG
         cudaSafeCall(cudaDeviceSynchronize());
 #endif
 

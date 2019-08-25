@@ -250,7 +250,7 @@ void cu_ResizeNearest(DevPtr<T> output, const DevPtr<T>& input)
     g_ResizeNearest<<<grid, block>>>(output, input);
 
     cudaCheckLastCall();
-#ifndef DNDEBUG
+#ifdef DEBUG
     cudaSafeCall(cudaDeviceSynchronize());
 #endif
 }
@@ -265,7 +265,7 @@ void cu_ResizeNearest(
     g_ResizeNearest<<<grid, block>>>(output, input, mask);
 
     cudaCheckLastCall();
-#ifndef DNDEBUG
+#ifdef DEBUG
     cudaSafeCall(cudaDeviceSynchronize());
 #endif
 }
@@ -279,7 +279,7 @@ void cu_ResizeLinear(DevPtr<T> output, const DevPtr<T>& input)
     g_ResizeLinear<<<grid, block>>>(output, input);
 
     cudaCheckLastCall();
-#ifndef DNDEBUG
+#ifdef DEBUG
     cudaSafeCall(cudaDeviceSynchronize());
 #endif
 }
@@ -297,7 +297,7 @@ void cu_ResizeLinear(
     g_ResizeLinear<<<grid, block>>>(output, input, mask);
 
     cudaCheckLastCall();
-#ifndef DNDEBUG
+#ifdef DEBUG
     cudaSafeCall(cudaDeviceSynchronize());
 #endif
 }
@@ -314,7 +314,7 @@ void cu_ResizeLinearValid(DevPtr<T> output, const DevPtr<T>& input)
     g_ResizeLinearValid<<<grid, block>>>(output, input);
 
     cudaCheckLastCall();
-#ifndef DNDEBUG
+#ifdef DEBUG
     cudaSafeCall(cudaDeviceSynchronize());
 #endif
 }
@@ -332,7 +332,7 @@ void cu_ResizeLinearValid(
     g_ResizeLinearValid<<<grid, block>>>(output, input, mask);
 
     cudaCheckLastCall();
-#ifndef DNDEBUG
+#ifdef DEBUG
     cudaSafeCall(cudaDeviceSynchronize());
 #endif
 }
@@ -350,7 +350,7 @@ void cu_ResizeLinearNonZero(
     g_ResizeLinearNonZero<<<grid, block>>>(output, input, mask);
 
     cudaCheckLastCall();
-#ifndef DNDEBUG
+#ifdef DEBUG
     cudaSafeCall(cudaDeviceSynchronize());
 #endif
 }
@@ -367,7 +367,7 @@ void cu_ApplyMask(DevPtr<T> image, const DevPtr<uchar>& mask)
     g_applyMask<<<grid, block>>>(image, mask);
 
     cudaCheckLastCall();
-#ifndef DNDEBUG
+#ifdef DEBUG
     cudaSafeCall(cudaDeviceSynchronize());
 #endif
 }

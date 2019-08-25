@@ -29,7 +29,7 @@ void cu_Prepare(DevPtr<Q>& result, const DevPtr<T>& image, Op operation)
     g_Prepare<<<grid, block>>>(result, image, operation);
 
     cudaCheckLastCall();
-#ifndef DNDEBUG
+#ifdef DEBUG
     cudaSafeCall(cudaDeviceSynchronize());
 #endif
 }

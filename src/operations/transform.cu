@@ -31,7 +31,7 @@ void cu_Transform(DevPtr<T>& image, Op operation)
     g_Transform<<<grid, block>>>(image, operation);
 
     cudaCheckLastCall();
-#ifndef DNDEBUG
+#ifdef DEBUG
     cudaSafeCall(cudaDeviceSynchronize());
 #endif
 }
