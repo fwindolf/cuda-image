@@ -10,6 +10,17 @@
 namespace cuimage
 {
 
+template <typename T>
+__global__ void g_SetTo(DevPtr<T> image, const T value)
+{
+    const dim3 pos = getPos(blockIdx, blockDim, threadIdx);
+
+    if (pos.x >= image.width || pos.y >= image.height)
+        return;
+    
+    image(pos.x, pos.y) = value;
+}
+
 template <typename T, typename Op>
 __global__ void g_Transform(DevPtr<T> image, Op operation)
 {
@@ -114,8 +125,15 @@ private:
 
 template <typename T> void cu_SetTo(DevPtr<T> image, const T& value)
 {
-    SetValue<T> set_op(value);
-    cu_Transform(image, set_op);
+    dim3 block = block2D(32);
+    dim3 grid = grid2D(image.width, image.height, block);
+
+    g_SetTo<<<grid, block>>>(image, value);
+
+    cudaCheckLastCall();
+#ifdef DEBUG
+    cudaSafeCall(cudaDeviceSynchronize());
+#endif
 }
 
 template <typename T> struct Threshold
