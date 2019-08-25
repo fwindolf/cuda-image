@@ -19,7 +19,7 @@ template <typename T> inline DevPtr<T> FileReader<T>::upload(cv::Mat& image)
 template <>
 inline DevPtr<float> FileReader<float>::read(const std::string& fileName)
 {
-    auto type = fileName.substr(fileName.find(".") + 1);
+    auto type = fileName.substr(fileName.rfind(".") + 1);
     cv::Mat img;
     if (type == "exr")
         img = _readExr(fileName);
