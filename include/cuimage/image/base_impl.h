@@ -195,7 +195,7 @@ void Image<T>::upload(const T* hdata, const size_t width, const size_t height)
         cudaMemcpy(data_, hdata, sizeBytes(), cudaMemcpyHostToDevice));
 }
 
-template <typename T> bool Image<T>::save(const std::string& fileName)
+template <typename T> bool Image<T>::save(const std::string& fileName) const
 {
     assert(data_);
 

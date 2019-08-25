@@ -106,7 +106,7 @@ public:
 
     void upload(const T* hdata, const size_t width, const size_t height);
 
-    bool save(const std::string& fileName);
+    bool save(const std::string& fileName) const;
 
     /**
      * Conversion to DevPtr
