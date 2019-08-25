@@ -121,7 +121,7 @@ __global__ void g_VertexIndicesTriangles(
     for (int i = 0; i < 4; i++)
     {
         df[i] = d_get<T>(d[i], 0); // get 0th component if necessary
-        if (df[i] > 0)
+        if (df[i] > 0.f && !isnan(df[i]))
         {
             valid++;
             minv = min(df[i], minv);
