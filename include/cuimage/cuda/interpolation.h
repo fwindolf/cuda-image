@@ -77,6 +77,27 @@ __device__ T d_interpolate_linear_valid(const T& v0, const T& v1,
 
 /**
  * Interpolate linearily between v0 and v1, depending on the distance from p to
+ * p- and p+ Takes only into account valid pixels
+ */
+template <typename T>
+__device__ T d_interpolate_linear_nonzero(const T& v0, const T& v1,
+    const uchar m0, const uchar m1, const int p0, const int p1, const float p)
+{
+    assert(p1 > p0);
+
+    // Both pixels valid -> interpolate between
+    if (isvalid(v0) && !iszero(v0) && isvalid(v1) && !iszero(v1))
+        return d_between(v0, v1, p0, p1, p);
+    else if (isvalid(v0) && !iszero(v0))
+        return v0;
+    else if (isvalid(v1) && !iszero(v1))
+        return v1;
+    else
+        return make<T>(nanf(""));
+}
+
+/**
+ * Interpolate linearily between v0 and v1, depending on the distance from p to
  * p- and p+ Takes only into account valid pixels and pixels that are not
  * masked out (mask != 0)
  */
@@ -96,7 +117,7 @@ __device__ T d_interpolate_linear_valid_masked(const T& v0, const T& v1,
     else if (!m0)
         return make<T>(0.f); // the pixel is masked out
     else
-        return v0; // some type of NaN
+        return make<T>(nanf("")); // some type of NaN
 }
 
 /**
@@ -111,25 +132,19 @@ __device__ T d_interpolate_linear_nonzero_masked(const T& v0, const T& v1,
     assert(p1 > p0);
 
     // Both or one of the pixels is valid
-    if (isvalid(v0) && v0 > make<T>(0.f) && m0 && isvalid(v1) && m1
-        && v1 > make<T>(0.f))
+    if (isvalid(v0) && !iszero(v0) && m0 && isvalid(v1) && m1 && !iszero(v1))
         return d_between(v0, v1, p0, p1, p);
-    else if (isvalid(v0) && m0 && v0 > make<T>(0.f))
+    else if (isvalid(v0) && m0 && !iszero(v0))
         return v0;
-    else if (isvalid(v1) && m1 && v1 > make<T>(0.f))
+    else if (isvalid(v1) && m1 && !iszero(v1))
         return v1;
 
-    // Both pixels are invalid
+    // Both pixels are masked
     if (!m0 && !m1)
         return make<T>(0.f);
 
-    if (!isvalid(v0) && !isvalid(v1))
-        return v0; // Some kind of NaN
-
-    if (v0 <= make<T>(0.f) && v1 <= make<T>(0.f))
-        return make<T>(0.f);
-
-    return make<T>(0.f);
+    // Both pixels are invalid or zero
+    return make<T>(nanf(""));
 }
 
 /**

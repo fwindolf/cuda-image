@@ -13,20 +13,30 @@ namespace cuimage
 __device__ float d_pixel(const int p, const float f)
 {
 #if USE_HALF_PIXEL_OFFSET
-    return ((p - 0.5) / f) + 0.5;
+    return p / f;
 #else
     return p / f;
 #endif
 }
 
-__device__ int2 d_surrounding(const int p, const int min, const int max)
+__device__ int clamp(const int value, const int min, const int max)
+{
+    if (value < min)
+        return min;
+    else if (value > max)
+        return max;
+    else
+        return value;
+}
+
+__device__ int2 d_surrounding(const float p, const int min, const int max)
 {
 #if USE_HALF_PIXEL_OFFSET
-    const int px0 = clamp<int>(floor(p - 0.5), min, max);
-    const int px1 = clamp<int>(ceil(p - 0.5), min, max);
+    const int px0 = clamp(floor(p - 0.5), min, max);
+    const int px1 = clamp(ceil(p - 0.5), min, max);
 #else
-    const int px0 = clamp<int>(floor(p), min, max);
-    const int px1 = clamp<int>(ceil(p), min, max);
+    const int px0 = clamp(floor(p), min, max);
+    const int px1 = clamp(ceil(p), min, max);
 #endif
 
     return make_int2(px0, px1);
@@ -212,6 +222,22 @@ __global__ void g_ResizeLinearValid(
 
 template <typename T>
 __global__ void g_ResizeLinearNonZero(
+    DevPtr<T> output, const DevPtr<T> input)
+{
+    const dim3 pos = getPos(blockIdx, blockDim, threadIdx);
+
+    if (pos.x >= output.width || pos.y >= output.height)
+        return;
+
+    const float fx = (float)output.width / input.width;
+    const float fy = (float)output.height / input.height;
+
+    interpolationFn<T> f = d_interpolate_linear_nonzero<T>;
+    output(pos.x, pos.y) = d_interpolate(input, pos.x, pos.y, fx, fy, f);
+}
+
+template <typename T>
+__global__ void g_ResizeLinearNonZero(
     DevPtr<T> output, const DevPtr<T> input, const DevPtr<uchar> mask)
 {
     const dim3 pos = getPos(blockIdx, blockDim, threadIdx);
@@ -222,7 +248,7 @@ __global__ void g_ResizeLinearNonZero(
     const float fx = (float)output.width / input.width;
     const float fy = (float)output.height / input.height;
 
-    interpolationFn<T> f = d_interpolate_linear_valid<T>;
+    interpolationFn<T> f = d_interpolate_linear_nonzero_masked<T>;
     output(pos.x, pos.y) = d_interpolate(input, mask, pos.x, pos.y, fx, fy, f);
 }
 
@@ -338,6 +364,20 @@ void cu_ResizeLinearValid(
 }
 
 template <typename T>
+void cu_ResizeLinearNonZero(DevPtr<T> output, const DevPtr<T>& input)
+{
+    dim3 block = block2D(32);
+    dim3 grid = grid2D(output.width, output.height, block);
+
+    g_ResizeLinearNonZero<<<grid, block>>>(output, input);
+
+    cudaCheckLastCall();
+#ifdef DEBUG
+    cudaSafeCall(cudaDeviceSynchronize());
+#endif
+}
+
+template <typename T>
 void cu_ResizeLinearNonZero(
     DevPtr<T> output, const DevPtr<T>& input, const DevPtr<uchar>& mask)
 {
@@ -378,6 +418,7 @@ void cu_ApplyMask(DevPtr<T> image, const DevPtr<uchar>& mask)
 FOR_EACH_TYPE(DECLARE_RESIZE_FUNCTION, cu_ResizeNearest)
 FOR_EACH_TYPE(DECLARE_RESIZE_FUNCTION, cu_ResizeLinear)
 FOR_EACH_TYPE(DECLARE_RESIZE_FUNCTION, cu_ResizeLinearValid)
+FOR_EACH_TYPE(DECLARE_RESIZE_FUNCTION, cu_ResizeLinearNonZero)
 
 #define DECLARE_MASKED_RESIZE_FUNCTION(type, function)                        \
     template void function(                                                   \
