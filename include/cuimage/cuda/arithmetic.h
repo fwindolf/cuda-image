@@ -1,7 +1,7 @@
 #pragma once
 #include "type.h"
 
-#include <assert.h>
+#include <cassert>
 #include <cuda_runtime.h>
 #include <limits>
 #include <math.h>
@@ -288,16 +288,6 @@ template <typename T> __host__ __device__ bool isvalid(const T& v);
 template <typename T> inline __host__ __device__ bool iszero(const T& v)
 {
     return (v == make<T>(0.f));
-}
-
-/**
- * @brief Clamp the value v between minv and maxv for each element of v
- */
-template <typename T>
-inline __host__ __device__ T clamp(const T v, const T minv, const T maxv)
-{
-    assert(maxv > minv);
-    return min(max(v, minv), maxv);
 }
 
 /**

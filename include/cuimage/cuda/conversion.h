@@ -2,6 +2,7 @@
 
 #include "type.h"
 
+#include <cassert>
 #include <vector_functions.hpp>
 
 namespace cuimage

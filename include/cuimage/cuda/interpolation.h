@@ -3,7 +3,7 @@
 #include "type.h"
 #include "utils.h"
 
-#include <assert.h>
+#include <cassert>
 #include <cuda_runtime.h>
 #include <math.h>
 #include <nvfunctional>

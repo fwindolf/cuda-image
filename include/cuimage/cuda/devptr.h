@@ -8,7 +8,7 @@
 #include "cuimage/cuda/type.h"
 #include "cuimage/cuda/utils.h"
 
-#include <assert.h>
+#include <cassert>
 
 namespace cuimage
 {
