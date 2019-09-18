@@ -152,9 +152,9 @@ public:
 
     void replaceNan(const T& value);
 
-    void abs();
+    Image abs();
 
-    void square();
+    Image square();
 
     /**
      * Reductions
@@ -204,6 +204,15 @@ public:
             TO>::type* = nullptr>
     Image<TO> get(const ushort component) const;
 
+    /*
+    // TODO: Modes
+    // TODO: Single filter method
+    
+    // Filters
+    Image blur(int radius, float sigma) const;
+
+    Image bilateral(int radius, float sigmaSpace, float sigmaColor) const;
+    */
     /**
      * Resizing
      */
