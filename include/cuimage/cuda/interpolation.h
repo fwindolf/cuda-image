@@ -23,7 +23,7 @@ __device__ T d_between(
     if (v0 == v1)
         return v0;
 
-    float d = p1 - p0;
+    const float d = p1 - p0;
     return v0 * ((p1 - p) / d) + v1 * ((p - p0) / d);
 }
 

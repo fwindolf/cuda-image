@@ -1,6 +1,7 @@
 SET(APP_TESTS test)
 
 SET(APP_DEPENDENCIES
+    ${OpenCV_LIBS}
     cuimage
     gtest
 )

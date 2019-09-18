@@ -60,6 +60,41 @@ using interpolationFn = nvstd::function<T(const T&, const T&, const uchar,
     const uchar, const int, const int, const float)>;
 
 template <typename T>
+__device__ T d_inter(const interpolationFn<T>& f, const T& x0, const T& x1,
+    const int& px0, const int& px1, const float& p)
+{
+    if (px0 == px1)
+    {
+        assert(x0 == x1);
+        return x0;
+    }
+
+#if USE_HALF_PIXEL_OFFSET
+    return f(x0, x1, 1, 1, px0, px1, p - 0.5);
+#else
+    return f(x0, x1, 1, 1, px0, px1, p);
+#endif
+}
+
+template <typename T>
+__device__ T d_inter(const interpolationFn<T>& f, const T& x0, const T& x1,
+    const uchar& m0, const uchar& m1, const int& px0, const int& px1,
+    const float& p)
+{
+    if (px0 == px1)
+    {
+        assert(x0 == x1);
+        return x0;
+    }
+
+#if USE_HALF_PIXEL_OFFSET
+    return f(x0, x1, m0, m1, px0, px1, p - 0.5);
+#else
+    return f(x0, x1, m0, m1, px0, px1, p);
+#endif
+}
+
+template <typename T>
 __device__ T d_interpolate(const DevPtr<T>& image, const int px, const int py,
     const float fx, const float fy, const interpolationFn<T>& f)
 {
@@ -80,13 +115,11 @@ __device__ T d_interpolate(const DevPtr<T>& image, const int px, const int py,
     const T a11 = image(ppx.y, ppy.y);
 
     // In x direction
-    const int2 pxn = d_closest(px_);
-    const T ax0 = f(a00, a10, 1, 1, pxn.x, pxn.y, px_);
-    const T ax1 = f(a01, a11, 1, 1, pxn.x, pxn.y, px_);
+    T ax0 = d_inter(f, a00, a10, ppx.x, ppx.y, px_);
+    T ax1 = d_inter(f, a01, a11, ppx.x, ppx.y, px_);
 
-    // in y direction
-    const int2 pyn = d_closest(py_);
-    return f(ax0, ax1, 1, 1, pyn.x, pyn.y, py_);
+    // In y direction
+    return d_inter(f, ax0, ax1, ppy.x, ppy.y, py_);
 }
 
 template <typename T>
@@ -116,15 +149,11 @@ __device__ T d_interpolate(const DevPtr<T>& image, const DevPtr<uchar>& mask,
     const uchar m11 = mask(ppx.y, ppy.y);
 
     // In x direction
-    const int2 pxn = d_closest(px_);
+    T ax0 = d_inter(f, a00, a10, m00, m10, ppx.x, ppx.y, px_);
+    T ax1 = d_inter(f, a01, a11, m01, m11, ppx.x, ppx.y, px_);
 
-    const T ax0 = f(a00, a10, m00, m10, pxn.x, pxn.y, px_);
-    const T ax1 = f(a01, a11, m01, m11, pxn.x, pxn.y, px_);
-
-    // in y direction
-    const int2 pyn = d_closest(py_);
-
-    return f(ax0, ax1, m00 && m10, m01 && m11, pyn.x, pyn.y, py_);
+    // In y direction
+    return d_inter(f, ax0, ax1, m00 & m10, m01 & m11, ppy.x, ppy.y, py_);
 }
 
 template <typename T>
@@ -221,8 +250,7 @@ __global__ void g_ResizeLinearValid(
 }
 
 template <typename T>
-__global__ void g_ResizeLinearNonZero(
-    DevPtr<T> output, const DevPtr<T> input)
+__global__ void g_ResizeLinearNonZero(DevPtr<T> output, const DevPtr<T> input)
 {
     const dim3 pos = getPos(blockIdx, blockDim, threadIdx);
 
