@@ -39,12 +39,13 @@ ELSE()
 ENDIF()
 
 # Eigen
-IF(EIGEN_DIR)
-    MESSAGE("Eigen DIR is set: Including ${EIGEN_DIR}/include")
-    INCLUDE_DIRECTORIES(${EIGEN_DIR}/include)
-ELSE()
-	FIND_PACKAGE(Eigen REQUIRED)
+IF(NOT EIGEN3_INCLUDE_DIR OR "${EIGEN3_INCLUDE_DIR}" STREQUAL "")
+    SET( EIGEN3_INCLUDE_DIR "$ENV{EIGEN3_INCLUDE_DIR}" )
 ENDIF()
+IF(NOT EIGEN3_INCLUDE_DIR)
+    MESSAGE( FATAL_ERROR "Please point the environment variable EIGEN3_INCLUDE_DIR to the include directory of your Eigen3 installation.")
+ENDIF()
+INCLUDE_DIRECTORIES ( "${EIGEN3_INCLUDE_DIR}" )
 
 #TinyExr
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/third_party/tinyexr)
@@ -80,8 +81,18 @@ ADD_DEFINITIONS(
 
 SET(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -std=c++11")
 SET(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-extended-lambda")
-SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -ftemplate-backtrace-limit=0; --cudart;  static; -O4; --expt-relaxed-constexpr; -fmad=true; --expt-extended-lambda;--relocatable-device-code=false ;
+
+SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -ftemplate-backtrace-limit=0; --cudart;  static; --expt-relaxed-constexpr; -fmad=true; --expt-extended-lambda;--relocatable-device-code=false ;
 -Xptxas -dlcm=ca; -Xptxas --opt-level=4 )
+
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+	SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -O0 -g -G)
+elseif (CMAKE_BUILD_TYPE STREQUAL "Release")
+	SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -O3)
+elseif (CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+	SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -O3 -g -G)
+endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
 
 
 # ------------------------------------------------------------------------

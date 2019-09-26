@@ -1,7 +1,6 @@
 SET(LIB_NAME cuimage)
 
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include)
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/third_party/lodepng/include)
 
 # ------------------------------------------------------------------------
 # cuimage library
@@ -61,12 +60,6 @@ INSTALL(DIRECTORY ${LIB_INCLUDE}
 
 INSTALL(TARGETS ${LIB_NAME}
     EXPORT ${PROJECT_NAME}Targets
-    LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-)
-
-# Install lodepng and pangolin shared library
-INSTALL(TARGETS
     LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
 )
