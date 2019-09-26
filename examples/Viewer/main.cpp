@@ -47,25 +47,31 @@ int main(int argc, char** argv)
             [](unsigned char c){ return std::tolower(c); });
 
         std::cout << "Opening image of type " << type << std::endl;
+        Image<float> img(directory + "/" + file);
+        std::cout << "Image has size (" << img.width() << "x" << img.height() << ")" << std::endl;
 
         if (vis == 'h')
         {
-            Image<float> img(directory + "/" + file);
             std::cout << "Saving as half-size to " << directory + "/" + "halved" + type << std::endl;
             auto img_h = img.resized(0.5, cuimage::LINEAR_NONZERO);
-            img_h.save(directory + "/" + "halved" + type);
+            img_h.replace(0, std::nanf(""));
+            if (type == ".exr")
+                img_h.save(directory + "/" + "halved" + type);
+            else
+                img_h.save(directory + "/" + "halved.exr");
         }
         if (vis == 'u')
         {
-            Image<float> img(directory + "/" + file);
             std::cout << "Saving as double-size to " << directory + "/" + "doubled" + type << std::endl;
             auto img_h = img.resized(2, cuimage::LINEAR_NONZERO);
-            img_h.save(directory + "/" + "doubled" + type);
+            if (type == ".exr")
+                img_h.save(directory + "/" + "doubled" + type);
+            else
+                img_h.save(directory + "/" + "doubled.exr");   
         }
 
         if (type == ".exr")
         {
-            Image<float> img(directory + "/" + file);
             if (vis == 'c')
                 img.show<cuimage::COLOR_TYPE_GREY_F>(file);
             else if(vis == 'd')
