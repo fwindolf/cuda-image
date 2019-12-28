@@ -72,6 +72,7 @@ int main(int argc, char** argv)
 
         if (type == ".exr")
         {
+            std::cout << "Depth has range (" << img.min() << "x" << img.max() << ")" << std::endl;
             if (vis == 'c')
                 img.show<cuimage::COLOR_TYPE_GREY_F>(file);
             else if(vis == 'd')
@@ -86,7 +87,8 @@ int main(int argc, char** argv)
             }
             else if(vis == 'd')
             {
-                auto d = img.asGray<float>();
+                auto d = img.asGray<float>() / 1000.f;
+                std::cout << "Depth has range (" << d.min() << "x" << d.max() << ")" << std::endl;
                 d.show<cuimage::DEPTH_TYPE>(file);
             }
         }

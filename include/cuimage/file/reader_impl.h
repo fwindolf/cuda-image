@@ -33,11 +33,14 @@ inline DevPtr<float> FileReader<float>::read(const std::string& fileName)
     // Make float
     img.convertTo(img, CV_32FC1);
 
-    // Estimate range and normalize
-    double minv, maxv;
-    cv::minMaxIdx(img, &minv, &maxv);
-    if (minv >= 0 && maxv > 1 && maxv <= 255)
-        img /= 255.f;
+    if (type == "png")
+    {
+        // Estimate range and normalize
+        double minv, maxv;
+        cv::minMaxIdx(img, &minv, &maxv);
+        if (minv >= 0 && maxv > 1 && maxv <= 255)
+            img /= 255.f;
+    }
 
     return upload(img);
 }
