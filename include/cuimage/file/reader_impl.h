@@ -85,6 +85,7 @@ inline DevPtr<uchar3> FileReader<uchar3>::read(const std::string& fileName)
             "Could not open image " + fileName + " or image is empty!");
 
     img.convertTo(img, CV_8UC3);
+    cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
     return upload(img);
 }
 

@@ -36,6 +36,7 @@ template <> inline bool FileWriter<int>::write(int* data)
 template <> inline bool FileWriter<float3>::write(float3* data)
 {
     cv::Mat img(height_, width_, CV_32FC3, data);
+    cv::cvtColor(img, img, cv::COLOR_RGB2BGR);
     if (type_ == "png" || type_ == "jpg")
         img.convertTo(img, CV_8UC3, 255.f);
 
@@ -58,6 +59,6 @@ template <> inline bool FileWriter<uchar3>::write(uchar3* data)
 template <> inline bool FileWriter<uchar4>::write(uchar4* data)
 {
     cv::Mat img(height_, width_, CV_8UC4, data);
-    cv::cvtColor(img, img, cv::COLOR_RGBA2BGR);
+    cv::cvtColor(img, img, cv::COLOR_RGBA2BGRA);
     return cv::imwrite(fileName_, img);
 }
